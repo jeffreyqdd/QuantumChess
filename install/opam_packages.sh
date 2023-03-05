@@ -12,4 +12,6 @@ packages=(
   ocamlformat-rpc
 )
 
+opam update -y
+opam upgrade -y
 opam install -y "${packages[@]}"
