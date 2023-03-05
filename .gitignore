@@ -1,1 +1,22 @@
+# assignment
+quantum.zip
+
+# ocaml
+*.cmo
+*.cma
+*.cmi
+*.out
+*.cmx
+*.native
+*.byte
+_build
+
+# temporary files
+*.swp
+*~
+\#*\#
+.DS_Store
+.vscode/
+
+# docker-related
 .bash_history
