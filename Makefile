@@ -9,11 +9,11 @@ docker:
 
 # Start development environment
 start-container:
-	docker run 																			\
-		--rm																					\
-		-v $(shell pwd):/home/software/quantum_chess 	\
-		--detach	 																		\
-		--name $(CONTAINER_NAME)											\
+	docker run	\
+		--rm	\
+		-v $(shell pwd):/home/software/quantum_chess	\
+		--detach	\
+		--name $(CONTAINER_NAME)	\
 		$(DOCKER_IMAGE) sleep infinity
 
 # Stop development environment
@@ -22,11 +22,11 @@ stop-container:
 
 # play the game w/o starting the dev environment
 final-product:
-	docker run 																													\
-		--rm																															\
-		-v $(shell pwd):/home/software/quantum_chess			 								\
-		-it				 																												\
-		$(DOCKER_IMAGE) 																									\
+	docker run	\
+		--rm	\
+		-v $(shell pwd):/home/software/quantum_chess	\
+		-it	\
+		$(DOCKER_IMAGE)	\
 		/bin/bash -i -c 'clear && OCAMLRUNPARAM=b dune exec bin/main.exe'
 
 # The following commands are used inside the docker container environment
