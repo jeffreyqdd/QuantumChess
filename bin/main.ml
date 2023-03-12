@@ -1,1 +1,2 @@
-let _ = print_endline "welcome to quantum chess"
+let _ =
+  ANSITerminal.print_string [ ANSITerminal.red ] "Welcome to quantum chess!\n"
