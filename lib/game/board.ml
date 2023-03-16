@@ -1,103 +1,116 @@
 open State
+module IntMap = Map.Make (Int)
 
 type quantum_piece = {
-  id : int;
+  id : int; (*TODO: remove this*)
   piece : piece;
   superpositions : (char * int) list;
   capture_attempt : bool;
 }
 
 type t = {
-  pieces : quantum_piece array;
+  pieces : quantum_piece IntMap.t;
   board : int list array array;
 }
 
 let player_turn board = raise (Failure "Unimplemented: Board.player_turn")
 let tile board file rank = raise (Failure "Unimplemented: Board.tile")
+let file_to_int c = int_of_char c - int_of_char 'a'
+let int_to_file n = n + int_of_char 'a' |> char_of_int
 
-let file_to_int c =
-  match c with
-  | 'a' -> 0
-  | 'b' -> 1
-  | 'c' -> 2
-  | 'd' -> 3
-  | 'e' -> 4
-  | 'f' -> 5
-  | 'g' -> 6
-  | 'h' -> 7
-  | _ -> -1
+module QFen = struct
+  exception MalformedQFen
 
-let int_to_file n =
-  match n with
-  | 0 -> 'a'
-  | 1 -> 'b'
-  | 2 -> 'c'
-  | 3 -> 'd'
-  | 4 -> 'e'
-  | 5 -> 'f'
-  | 6 -> 'g'
-  | 7 -> 'h'
-  | _ -> 'z'
+  let start =
+    "r0:n1:b2:k3:q4:b5:n6:r7/p8:p9:p10:p11:p12:p13:p14:p15:/8/8/8/8/P16:P17:P18:P19:P20:P21:P22:P23/R24:N25:B26:K27:Q28:B29:N30:R31 \
+     - QKqk - w"
 
-let rec parse_layout_str (str : char list) (board : t) (curr_file : char)
-    (curr_rank : int) (piece_count : int) : t =
-  let data =
-    match str with
-    | 'R' :: _ -> Some (Rook, Black)
-    | 'N' :: _ -> Some (Knight, Black)
-    | 'B' :: _ -> Some (Bishop, Black)
-    | 'K' :: _ -> Some (King, Black)
-    | 'Q' :: _ -> Some (Queen, Black)
-    | 'r' :: _ -> Some (Rook, White)
-    | 'n' :: _ -> Some (Knight, White)
-    | 'b' :: _ -> Some (Bishop, White)
-    | 'k' :: _ -> Some (King, White)
-    | 'q' :: _ -> Some (Queen, White)
-    | '.' :: _ -> None
-    | '\\' :: _ -> None
-    | [] -> None
-    | _ -> raise (Failure "unexpected piece in starting layout")
-  in
-
-  match str with
-  | [] -> board
-  | _ :: t -> (
-      let next_file =
-        if curr_rank = 8 then int_to_file (file_to_int curr_file + 1)
-        else curr_file
+  (*helper functions for fen_from_board begin here*)
+  let rec iter_through_col board col_lst rank_num file_num =
+    let parse_piece str =
+      let piece_letter = String.sub str 0 1 in
+      let number_letters =
+        String.sub str 1 (String.length str - 1) |> int_of_string
       in
-      let next_rank = curr_rank + (1 mod 9) in
+      let piece_type =
+        match piece_letter with
+        | "p" -> { color = Black; name = Pawn }
+        | "r" -> { color = Black; name = Rook }
+        | "n" -> { color = Black; name = Knight }
+        | "b" -> { color = Black; name = Bishop }
+        | "q" -> { color = Black; name = Queen }
+        | "k" -> { color = Black; name = King }
+        | "P" -> { color = White; name = Pawn }
+        | "R" -> { color = White; name = Rook }
+        | "N" -> { color = White; name = Knight }
+        | "B" -> { color = White; name = Bishop }
+        | "Q" -> { color = White; name = Queen }
+        | "K" -> { color = White; name = King }
+        | _ -> raise MalformedQFen
+      in
+      (number_letters, piece_type)
+    in
 
-      match data with
-      | Some a ->
-          let current_piece =
-            {
-              id = piece_count;
-              piece = { name = fst a; color = snd a };
-              superpositions = [ (curr_file, curr_rank) ];
-              capture_attempt = false;
-            }
-          in
-          board.pieces.(current_piece.id) <- current_piece;
-          board.board.(curr_rank).(file_to_int curr_file) <-
-            current_piece.id :: board.board.(curr_rank).(file_to_int curr_file);
-          parse_layout_str t board next_file next_rank (piece_count + 1)
-      | None -> parse_layout_str t board next_file next_rank 0)
+    match col_lst with
+    | [] -> board
+    | h :: t ->
+        (*figure out if is piece or column skip*)
+        let is_column_skip = Str.string_match (Str.regexp "[0-9]+$") h 0 in
+        if is_column_skip then
+          iter_through_col board t rank_num (file_num + int_of_string h)
+        else
+          (* if piece, parse*)
+          let id, piece_type = parse_piece h in
+          (* check if piece already exists, if so, then it is in superposition*)
+          if IntMap.mem id board.pieces then
+            let piece = IntMap.find id board.pieces in
+            (*ensure piece color and type is satisfied*)
+            let _ = if piece.piece <> piece_type then raise MalformedQFen in
+            (*update piece with new superposition*)
+            let new_piece =
+              {
+                piece with
+                superpositions =
+                  (int_to_file file_num, rank_num) :: piece.superpositions;
+              }
+            in
+            { board with pieces = IntMap.add id new_piece board.pieces }
+          else
+            (*create piece that is not in superposition*)
+            let new_piece =
+              {
+                id;
+                piece = piece_type;
+                superpositions = [ (int_to_file file_num, rank_num) ];
+                capture_attempt = false;
+              }
+            in
+            (*place piece on board*)
+            (*todo make this into an actual function*)
+            board.board.(rank_num).(file_num) <-
+              id :: board.board.(rank_num).(file_num);
 
-let init =
-  let dummy_piece =
-    {
-      id = 0;
-      piece = { name = Pawn; color = Black };
-      superpositions = [];
-      capture_attempt = false;
-    }
-  in
-  let bare =
-    { pieces = Array.make 32 dummy_piece; board = Array.make_matrix 8 8 [] }
-  in
-  let board_layout =
-    "RNBKQBNR\\PPPPPPPP\\........\\........\\........\\........\\pppppppp\\rnbkqbnr"
-  in
-  let explode s = List.init (String.length s) (String.get s) in
-  parse_layout_str (explode board_layout) bare 'a' 0 0
+            { board with pieces = IntMap.add id new_piece board.pieces }
+
+  let rec iter_through_rank board rank_lst rank_num =
+    match rank_lst with
+    | [] -> board
+    | h :: t ->
+        let new_board = iter_through_rank board t (rank_num - 1) in
+        iter_through_col new_board (String.split_on_char ':' h) rank_num 0
+
+  (**[parse_rough_setup str] parses [str] into pieces and board, see type 'a t.
+     Requires [str] has a valid <piece_string> format.*)
+  let parse_rough_setup str =
+    let empty_board =
+      { pieces = IntMap.empty; board = Array.make_matrix 8 8 [] }
+    in
+    let ranks = String.split_on_char '/' str in
+    iter_through_rank empty_board ranks 7
+
+  (* MARKS THE START OF PUBLIC FUNCTIONS*)
+  let valid_fen fen = raise (Failure "Yeet")
+  let board_from_fen fen = raise (Failure "yeet")
+  let fen_from_board board = raise (Failure "yeet")
+  let init = board_from_fen start
+end
