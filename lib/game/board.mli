@@ -48,9 +48,6 @@ module QFen : sig
   val start : string
   (**[start] evalues to a QFen denoting a normal starting position*)
 
-  val valid_fen : string -> bool
-  (**[valid_fen s] evalues to true if [s] is a valid fen position.*)
-
   val board_from_fen : string -> t
   (**[board_from_fen f] deserializes [f] to [Board.t].*)
 
