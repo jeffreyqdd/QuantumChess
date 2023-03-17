@@ -3,4 +3,5 @@
 (library
  (name lib)
  (public_name Quantum)
+ (libraries str)
  (modules board command state engine frontend))
