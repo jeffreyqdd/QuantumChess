@@ -145,8 +145,14 @@ module QFen = struct
       match col_lst with
       | [] -> board
       | h :: t ->
-          let new_board = iter_through_col board t (file_num + 1) rank_num in
-          square_of_string new_board (file_of_int file_num) rank_num h
+          (* print_endline ("\tparsing piece: " ^ h); *)
+          if Str.string_match (Str.regexp "[0-9]+") h 0 then
+            iter_through_col board t (file_num + int_of_string h) rank_num
+          else
+            let new_board =
+              square_of_string board (file_of_int file_num) rank_num h
+            in
+            iter_through_col new_board t (file_num + 1) rank_num
     in
 
     let rec iter_through_rank board rank_lst rank_num =
@@ -154,6 +160,7 @@ module QFen = struct
       | [] -> board
       | h :: t ->
           let new_board = iter_through_rank board t (rank_num - 1) in
+          (* print_endline ("parsing rank: " ^ h); *)
           iter_through_col new_board (String.split_on_char ':' h) 0 rank_num
     in
 
@@ -261,7 +268,7 @@ module QFen = struct
   (* public functions of QFen*)
   let start =
     "r0:n1:b2:k3:q4:b5:n6:r7/p8:p9:p10:p11:p12:p13:p14:p15:/8/8/8/8/P16:P17:P18:P19:P20:P21:P22:P23/R24:N25:B26:K27:Q28:B29:N30:R31 \
-     - QKqk - w"
+     - w KQkq -"
 
   let board_from_fen fen =
     let fen_parts = String.split_on_char ' ' fen in
@@ -281,10 +288,15 @@ module QFen = struct
     if List.length fen_parts <> 5 then raise MalformedQFen;
     (*parse piece string*)
     (* let rudimentary_board   *)
+    (* Printf.printf "\n\nParsing piece string\n%!"; *)
     let board = board_of_piece_str empty_board (List.nth fen_parts 0) in
+    (* Printf.printf "\n\nParsing capture_attempts\n%!"; *)
     let board = capture_attempts_of_str board (List.nth fen_parts 1) in
+    (* Printf.printf "\n\nParsing turn\n%!"; *)
     let board = turn_of_str board (List.nth fen_parts 2) in
+    (* Printf.printf "\n\nParsing castling rights\n%!"; *)
     let board = castling_rights_of_str board (List.nth fen_parts 3) in
+    (* Printf.printf "\n\nParsing PIPI\n%!"; *)
     pipi_of_str board (List.nth fen_parts 4)
 
   let fen_from_board board =
