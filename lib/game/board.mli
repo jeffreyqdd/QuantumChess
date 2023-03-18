@@ -22,11 +22,11 @@ type t
    <en passant>". Each section is space deliminated
 
    - piece string: pieces are separated by a colon. A forward slash denotes next
-     rank. A number by itself denotes the number of empty squares. The string
-     starts on the a8 square and makes its way to the h1 square. eg. a board
-     with 8 black pawns on their starting position:
-     "8/p0:p0:p2:p3:p4:p5:p6:p7/8/8/8/8/8/8" note that the pawns on a7 and b7
-     are the same pawns but in superposition.
+     rank. A number by itself denotes the number of empty squares. There can be
+     mutiple pieces per tile. The string starts on the a8 square and makes its
+     way to the h1 square. eg. a board with 8 black pawns on their starting
+     position: "8/p0:p0:p2:p3:p4:p5:p6:p7/8/8/8/8/8/8" note that the pawns on a7
+     and b7 are the same pawns but in superposition.
 
    - capture_attempts: numbers corresponding to piece ids deliminated by colons.
      Each number refers to the piece that is currently. If a piece is captured
