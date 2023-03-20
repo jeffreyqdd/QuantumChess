@@ -19,11 +19,11 @@ type t = {
   brick_on_pipi_squares : int list;
 }
 
+(* ================================================================== *)
+(* ========== Public Functions that belong to module Board ========== *)
+(* ================================================================== *)
 let int_of_file c = int_of_char c - int_of_char 'a'
 let file_of_int n = n + int_of_char 'a' |> char_of_int
-
-(* ========== Public Functions that belong to module Board ========== *)
-
 let player_turn board = board.turn
 
 let tile board file rank =
@@ -32,48 +32,51 @@ let tile board file rank =
     []
     board.board.(rank).(int_of_file file)
 
+(* ============================================== *)
 (* ========== Private Helper Functions ========== *)
+(* ============================================== *)
 let pieces_at board file rank = board.board.(rank).(int_of_file file)
-let piece_of_id board id = IntMap.find id board.pieces
+let qpiece_of_id board id = IntMap.find id board.pieces
 
-(** [add_superposition board id file rank] Requires that piece exists*)
-let add_superposition board piece_type id file rank =
-  let curr_piece = IntMap.find id board.pieces in
-  if curr_piece.piece <> piece_type then
-    raise (Failure "Cannot superimpose pieces of different types");
-  let new_piece =
-    {
-      curr_piece with
-      superpositions = (file, rank) :: curr_piece.superpositions;
-    }
-  in
-  { board with pieces = IntMap.add id new_piece board.pieces }
-
-let update_capture_state board id capture_state =
-  let piece = piece_of_id board id in
-  let new_piece = { piece with capture_attempt = true } in
-  { board with pieces = IntMap.add id new_piece board.pieces }
-
-(** [register_piece board piece_type id file rank] Requires that piece does not
-    exist *)
-let register_piece board piece_type id file rank =
-  if not (IntMap.mem id board.pieces) then
+let place_piece board piece_type id file rank =
+  let add_superposition board piece_type id file rank =
+    let curr_piece = IntMap.find id board.pieces in
+    if curr_piece.piece <> piece_type then
+      raise (Failure "Cannot superimpose pieces of different types");
     let new_piece =
       {
-        id;
-        piece = piece_type;
-        superpositions = [ (file, rank) ];
-        capture_attempt = false;
+        curr_piece with
+        superpositions = (file, rank) :: curr_piece.superpositions;
       }
     in
     { board with pieces = IntMap.add id new_piece board.pieces }
-  else raise (Failure "Piece already exists -- cannot register")
+  in
+  let register_piece board piece_type id file rank =
+    if not (IntMap.mem id board.pieces) then
+      let new_piece =
+        {
+          id;
+          piece = piece_type;
+          superpositions = [ (file, rank) ];
+          capture_attempt = false;
+        }
+      in
+      { board with pieces = IntMap.add id new_piece board.pieces }
+    else raise (Failure "Piece already exists -- cannot register")
+  in
+  (*regardless, we place the piece on board (TODO, REFACTOR)*)
+  board.board.(rank).(int_of_file file) <-
+    id :: board.board.(rank).(int_of_file file);
 
-let place_piece board piece_type id file rank =
   if IntMap.mem id board.pieces then
     (*piece id exists, so we update super position*)
     add_superposition board piece_type id file rank
   else register_piece board piece_type id file rank
+
+let update_capture_state board id capture_state =
+  let piece = qpiece_of_id board id in
+  let new_piece = { piece with capture_attempt = true } in
+  { board with pieces = IntMap.add id new_piece board.pieces }
 
 (* ========== Start of QFen module ========== *)
 module QFen = struct
@@ -120,86 +123,96 @@ module QFen = struct
       match lst with
       | [] -> ""
       | h :: t ->
-          let qpiece = piece_of_id board h in
+          let qpiece = qpiece_of_id board h in
           str_of_piece_type qpiece.piece ^ string_of_int h ^ generate t
     in
     generate square
 
   (** [square_of_string b f r s] parses [s], containing a QFen tile
       representation into [b] at file [f] and rank [r]*)
-
   let square_of_string board file rank str =
     let piece_names = Str.split (Str.regexp "[0-9]+") str in
     let piece_ids =
       let s_lst = Str.split (Str.regexp "[a-zA-Z]+") str in
       List.map (fun x -> int_of_string x) s_lst
     in
-
+    (* print_endline ("tile: " ^ String.make 1 file ^ string_of_int rank); *)
     let rec add_piece_ids piece_lst id_lst b =
       match (piece_lst, id_lst) with
       | [], [] -> b
       | pt :: pt_lst, id :: id_lst ->
-          let new_board =
-            register_piece b (piece_type_of_str pt) id file rank
-          in
+          let new_board = place_piece b (piece_type_of_str pt) id file rank in
+          (* print_endline ("place piece: " ^ pt ^ (string_of_int id)); *)
           add_piece_ids pt_lst id_lst new_board
       | _ -> raise MalformedQFen
     in
     add_piece_ids piece_names piece_ids board
 
   let board_of_piece_str board str =
-    let rec iter_through_col board col_lst file_num rank_num =
-      match col_lst with
-      | [] -> board
+    let rows = String.split_on_char '/' str in
+    let rec build_row b lst file rank =
+      match lst with
+      | [] -> b
       | h :: t ->
-          (* print_endline ("\tparsing piece: " ^ h); *)
           if Str.string_match (Str.regexp "[0-9]+") h 0 then
-            iter_through_col board t (file_num + int_of_string h) rank_num
+            build_row b t (file + int_of_string h) rank
           else
-            let new_board =
-              square_of_string board (file_of_int file_num) rank_num h
-            in
-            iter_through_col new_board t (file_num + 1) rank_num
+            let new_board = square_of_string b (file_of_int file) rank h in
+            build_row new_board t (file + 1) rank
     in
 
-    let rec iter_through_rank board rank_lst rank_num =
-      match rank_lst with
-      | [] -> board
-      | h :: t ->
-          let new_board = iter_through_rank board t (rank_num - 1) in
-          (* print_endline ("parsing rank: " ^ h); *)
-          iter_through_col new_board (String.split_on_char ':' h) 0 rank_num
+    let new_board = ref board in
+    let _ =
+      for x = 0 to 7 do
+        (* Printf.printf "Parsing row %d: %s%!\n" x (List.nth rows x); *)
+        new_board :=
+          build_row !new_board
+            (String.split_on_char ':' (List.nth rows x))
+            0 (7 - x)
+      done
     in
-
-    iter_through_rank board (String.split_on_char '/' str) 7
+    !new_board
 
   let piece_str_of_board board =
-    (*https://stackoverflow.com/questions/10893521/how-to-take-product-of-two-list-in-ocaml*)
-    let cartesian a b =
-      List.concat (List.map (fun e -> List.map (fun e' -> (e, e')) b) a)
-    in
-    let all_tiles =
-      cartesian [ 7; 6; 5; 4; 3; 2; 1; 0 ]
-        [ 'a'; 'b'; 'c'; 'd'; 'e'; 'f'; 'g'; 'h' ]
-    in
-    let rec iter_through lst =
-      match lst with
-      | [] -> ""
-      | h :: t ->
-          let rank_num = fst h in
-          let file_char = snd h in
-          let one_rank =
-            List.fold_left
-              (fun acc q_piece ->
-                str_of_piece_type (IntMap.find q_piece board.pieces).piece
-                ^ string_of_int (IntMap.find q_piece board.pieces).id
-                ^ acc)
-              ""
-              board.board.(rank_num).(int_of_file file_char)
-          in
-          one_rank ^ iter_through t
-    in
-    iter_through all_tiles
+    let rank_string = ref "" in
+    let final_string = ref "" in
+    let counter = ref 0 in
+    for rank = 7 downto 0 do
+      rank_string := "";
+      counter := 0;
+      for file = 0 to 7 do
+        let before = !rank_string in
+        let new_str = ref (string_of_square board (file_of_int file) rank) in
+        (*we increment counter if this string is empty*)
+        (if String.length !new_str = 0 then incr counter
+        else if !counter > 0 then
+          let _ = new_str := string_of_int !counter ^ ":" ^ !new_str in
+          counter := 0);
+
+        (*add to rank*)
+        if before = "" then rank_string := !new_str
+        else if String.get before (String.length before - 1) = ':' then
+          rank_string := before ^ !new_str
+        else rank_string := before ^ ":" ^ !new_str
+      done;
+      (*add rank to file piece string*)
+      if !counter > 0 then rank_string := !rank_string ^ string_of_int !counter;
+      if !final_string = "" then final_string := !rank_string
+      else final_string := !final_string ^ "/" ^ !rank_string
+    done;
+    !final_string
+
+  (* 
+     (*https://stackoverflow.com/questions/10893521/how-to-take-product-of-two-list-in-ocaml*)
+     let cartesian a b = List.concat (List.map (fun e -> List.map (fun e' -> (e,
+     e')) b) a) in let all_tiles = cartesian [ 7; 6; 5; 4; 3; 2; 1; 0 ] [ 'a';
+     'b'; 'c'; 'd'; 'e'; 'f'; 'g'; 'h' ] in let rec iter_through lst = match lst
+     with | [] -> "" | h :: t -> let rank_num = fst h in let file_char = snd h
+     in let one_rank = List.fold_left (fun acc q_piece -> str_of_piece_type
+     (IntMap.find q_piece board.pieces).piece ^ string_of_int (IntMap.find
+     q_piece board.pieces).id ^ ":" ^ acc) ""
+     board.board.(rank_num).(int_of_file file_char) in one_rank ^ iter_through t
+     in iter_through all_tiles *)
 
   let capture_attempts_of_str board str =
     if str = "-" then board
@@ -227,8 +240,9 @@ module QFen = struct
             if v.capture_attempt then string_of_int v.id else ""
           in
           let next_string = gen_string t in
-          if next_string = "" then current_string
-          else next_string ^ current_string
+          if current_string = "" then next_string
+          else if next_string = "" then current_string
+          else current_string ^ ":" ^ next_string
     in
     let ret_value = gen_string all_bindings in
     if ret_value = "" then "-" else ret_value
@@ -257,10 +271,10 @@ module QFen = struct
 
   let str_of_castling_rights board =
     let ret = "" in
-    let ret = if board.black_kingside_castle then ret ^ "k" else ret in
-    let ret = if board.black_queenside_castle then ret ^ "q" else ret in
     let ret = if board.white_kingside_castle then ret ^ "K" else ret in
     let ret = if board.white_queenside_castle then ret ^ "Q" else ret in
+    let ret = if board.black_kingside_castle then ret ^ "k" else ret in
+    let ret = if board.black_queenside_castle then ret ^ "q" else ret in
     if ret = "" then "-" else ret
 
   let pipi_of_str board str =
@@ -283,7 +297,7 @@ module QFen = struct
 
   (* public functions of QFen*)
   let start =
-    "r0:n1:b2:k3:q4:b5:n6:r7/p8:p9:p10:p11:p12:p13:p14:p15:/8/8/8/8/P16:P17:P18:P19:P20:P21:P22:P23/R24:N25:B26:K27:Q28:B29:N30:R31 \
+    "r0:n1:b2:q3:k4:b5:n6:r7/p8:p9:p10:p11:p12:p13:p14:p15/8/8/8/8/P16:P17:P18:P19:P20:P21:P22:P23/R24:N25:B26:Q27:K28:B29:N30:R31 \
      - w KQkq -"
 
   let board_from_fen fen =

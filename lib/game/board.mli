@@ -45,8 +45,12 @@ type t
      are en passantable. A dash "-" to empty.*)
 
 module QFen : sig
+  exception MalformedQFen
+  (**raised when a qfen cannot be parsed due to it violating the above
+     specifications*)
+
   val start : string
-  (**[start] evalues to a QFen denoting a normal starting position*)
+  (**[start] evaluates to a QFen denoting a normal starting position*)
 
   val board_from_fen : string -> t
   (**[board_from_fen f] deserializes [f] to [Board.t].*)
