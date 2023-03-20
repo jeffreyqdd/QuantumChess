@@ -4,4 +4,6 @@
  (name quantum)
  (public_name Quantum)
  (libraries str)
- (modules board command state engine frontend))
+ (modules board command state engine frontend)
+ (instrumentation
+  (backend bisect_ppx)))

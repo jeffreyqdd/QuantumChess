@@ -2,7 +2,7 @@ FROM ubuntu:latest as base_image
 
 # install dev tools and ocaml
 RUN apt update && \
-  apt install -y build-essential zip unzip vim && \
+  apt install -y build-essential zip unzip vim neovim nano openssl && \
   apt install -y opam && \
   apt -y clean all && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /root.cache/
@@ -19,8 +19,6 @@ COPY install/opam_packages.sh /tmp/
 RUN /tmp/opam_packages.sh
 USER root
 RUN rm /tmp/opam_packages.sh
-
-
 
 # finalized development environment
 FROM base_image
