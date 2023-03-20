@@ -19,11 +19,18 @@ type t = {
   brick_on_pipi_squares : int list;
 }
 
-(* ========== Public Functions that belong to module Board ========== *)
-let player_turn board = raise (Failure "Unimplemented: Board.player_turn")
-let tile board file rank = raise (Failure "Unimplemented: Board.tile")
 let int_of_file c = int_of_char c - int_of_char 'a'
 let file_of_int n = n + int_of_char 'a' |> char_of_int
+
+(* ========== Public Functions that belong to module Board ========== *)
+
+let player_turn board = board.turn
+
+let tile board file rank =
+  List.fold_left
+    (fun acc q_piece -> (IntMap.find q_piece board.pieces).piece :: acc)
+    []
+    board.board.(rank).(int_of_file file)
 
 (* ========== Private Helper Functions ========== *)
 let pieces_at board file rank = board.board.(rank).(int_of_file file)
@@ -75,34 +82,34 @@ module QFen = struct
   (* Helper functions for QFen*)
   let piece_type_of_str c =
     match c with
-    | "p" -> { color = Black; name = Pawn }
-    | "r" -> { color = Black; name = Rook }
-    | "n" -> { color = Black; name = Knight }
-    | "b" -> { color = Black; name = Bishop }
-    | "q" -> { color = Black; name = Queen }
-    | "k" -> { color = Black; name = King }
-    | "P" -> { color = White; name = Pawn }
-    | "R" -> { color = White; name = Rook }
-    | "N" -> { color = White; name = Knight }
-    | "B" -> { color = White; name = Bishop }
-    | "Q" -> { color = White; name = Queen }
-    | "K" -> { color = White; name = King }
+    | "p" -> { name = Pawn; color = Black }
+    | "r" -> { name = Rook; color = Black }
+    | "n" -> { name = Knight; color = Black }
+    | "b" -> { name = Bishop; color = Black }
+    | "q" -> { name = Queen; color = Black }
+    | "k" -> { name = King; color = Black }
+    | "P" -> { name = Pawn; color = White }
+    | "R" -> { name = Rook; color = White }
+    | "N" -> { name = Knight; color = White }
+    | "B" -> { name = Bishop; color = White }
+    | "Q" -> { name = Queen; color = White }
+    | "K" -> { name = King; color = White }
     | _ -> raise MalformedQFen
 
   let str_of_piece_type pt =
     match pt with
-    | { color = Black; name = Pawn } -> "p"
-    | { color = Black; name = Rook } -> "r"
-    | { color = Black; name = Knight } -> "n"
-    | { color = Black; name = Bishop } -> "b"
-    | { color = Black; name = Queen } -> "q"
-    | { color = Black; name = King } -> "k"
-    | { color = White; name = Pawn } -> "P"
-    | { color = White; name = Rook } -> "R"
-    | { color = White; name = Knight } -> "N"
-    | { color = White; name = Bishop } -> "B"
-    | { color = White; name = Queen } -> "Q"
-    | { color = White; name = King } -> "K"
+    | { name = Pawn; color = Black } -> "p"
+    | { name = Rook; color = Black } -> "r"
+    | { name = Knight; color = Black } -> "n"
+    | { name = Bishop; color = Black } -> "b"
+    | { name = Queen; color = Black } -> "q"
+    | { name = King; color = Black } -> "k"
+    | { name = Pawn; color = White } -> "P"
+    | { name = Rook; color = White } -> "R"
+    | { name = Knight; color = White } -> "N"
+    | { name = Bishop; color = White } -> "B"
+    | { name = Queen; color = White } -> "Q"
+    | { name = King; color = White } -> "K"
     | _ -> raise MalformedQFen
 
   (** [string_of_square b f r] tunrs file [f] and rank [r] of board [b] into a
@@ -118,8 +125,8 @@ module QFen = struct
     in
     generate square
 
-  (** [tile_of_string b f r s] parses [s], containing a QFen tile representation
-      into [b] at file [f] and rank [r]*)
+  (** [square_of_string b f r s] parses [s], containing a QFen tile
+      representation into [b] at file [f] and rank [r]*)
 
   let square_of_string board file rank str =
     let piece_names = Str.split (Str.regexp "[0-9]+") str in
@@ -167,23 +174,32 @@ module QFen = struct
     iter_through_rank board (String.split_on_char '/' str) 7
 
   let piece_str_of_board board =
-    let rec iter_through_col board file_num rank_num =
-      match file_num with
-      | a when a >= 0 && a < 7 ->
-          let next_tile = iter_through_col board (file_num + 1) rank_num in
-          let tile = string_of_square board (file_of_int file_num) rank_num in
-          if next_tile <> "" then tile ^ ":" ^ next_tile else tile
-      | _ -> ""
+    (*https://stackoverflow.com/questions/10893521/how-to-take-product-of-two-list-in-ocaml*)
+    let cartesian a b =
+      List.concat (List.map (fun e -> List.map (fun e' -> (e, e')) b) a)
     in
-    let rec iter_through_rank board rank_num =
-      match rank_num with
-      | a when a >= 0 && a < 7 ->
-          let prev_line = iter_through_rank board (rank_num - 1) in
-          let line = iter_through_col board 0 rank_num in
-          if prev_line = "" then line else prev_line ^ line
-      | _ -> ""
+    let all_tiles =
+      cartesian [ 7; 6; 5; 4; 3; 2; 1; 0 ]
+        [ 'a'; 'b'; 'c'; 'd'; 'e'; 'f'; 'g'; 'h' ]
     in
-    iter_through_rank board 7
+    let rec iter_through lst =
+      match lst with
+      | [] -> ""
+      | h :: t ->
+          let rank_num = fst h in
+          let file_char = snd h in
+          let one_rank =
+            List.fold_left
+              (fun acc q_piece ->
+                str_of_piece_type (IntMap.find q_piece board.pieces).piece
+                ^ string_of_int (IntMap.find q_piece board.pieces).id
+                ^ acc)
+              ""
+              board.board.(rank_num).(int_of_file file_char)
+          in
+          one_rank ^ iter_through t
+    in
+    iter_through all_tiles
 
   let capture_attempts_of_str board str =
     if str = "-" then board

@@ -1,3 +1,5 @@
 (executable
  (name main)
- (libraries Quantum ounit2))
+ (public_name main)
+ (libraries Quantum ounit2)
+ (modules main boardtest))
