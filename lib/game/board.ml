@@ -260,7 +260,7 @@ module QFen = struct
     let ret = if board.black_kingside_castle then ret ^ "k" else ret in
     let ret = if board.black_queenside_castle then ret ^ "q" else ret in
     let ret = if board.white_kingside_castle then ret ^ "K" else ret in
-    let ret = if board.white_queenside_castle then ret ^ "W" else ret in
+    let ret = if board.white_queenside_castle then ret ^ "Q" else ret in
     if ret = "" then "-" else ret
 
   let pipi_of_str board str =
