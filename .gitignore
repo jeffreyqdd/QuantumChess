@@ -18,5 +18,9 @@ _build
 .DS_Store
 .vscode/
 
+# bisect 
+*.coverage
+_coverage/
+
 # docker-related
 .bash_history
