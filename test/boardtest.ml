@@ -13,7 +13,6 @@ let pp_piece p =
     | Bishop -> "Bishop"
     | Queen -> "Queen"
     | King -> "King"
-    | None -> ""
   in
   let color_str =
     match p.color with
