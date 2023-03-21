@@ -1,1 +1,8 @@
-let _ = print_endline "welcome to quantum chess"
+open Quantum
+open Board
+open Frontend
+
+let _ =
+  let board = QFen.init in
+  ANSITerminal.print_string [ ANSITerminal.red ] "Welcome to quantum chess!\n";
+  draw board

@@ -10,6 +10,7 @@ packages=(
   ocaml-lsp-server 
   ocamlformat 
   ocamlformat-rpc
+  ANSITerminal
 )
 
 opam update -y

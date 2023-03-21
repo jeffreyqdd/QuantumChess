@@ -113,7 +113,6 @@ module QFen = struct
     | { name = Bishop; color = White } -> "B"
     | { name = Queen; color = White } -> "Q"
     | { name = King; color = White } -> "K"
-    | _ -> raise MalformedQFen
 
   (** [string_of_square b f r] tunrs file [f] and rank [r] of board [b] into a
       QFen tile representation*)

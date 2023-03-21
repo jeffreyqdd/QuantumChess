@@ -3,7 +3,6 @@ type color =
   | White  (** The type representing the possible colors in chess *)
 
 type piece_name =
-  | None
   | Pawn
   | Rook
   | Knight
