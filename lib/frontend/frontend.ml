@@ -1,7 +1,7 @@
 open State
 open Board
 
-let ranks = [ 1; 2; 3; 4; 5; 6; 7; 8 ]
+let ranks = [ 0; 1; 2; 3; 4; 5; 6; 7 ]
 let files = [ 'a'; 'b'; 'c'; 'd'; 'e'; 'f'; 'g'; 'h' ]
 
 (** [piece_to_string p c] is a Unicode character representing piece [p] with
@@ -34,11 +34,9 @@ let tile (board : Board.t) (file : char) (rank : int) : string =
 
 (** [print_line board rank] prints the line in [board] represented by [rank] *)
 let print_line (board : Board.t) (rank : int) : unit =
-  files |> List.iter (fun file -> print_string (tile board file rank))
+  files |> List.iter (fun file -> print_string (tile board file rank));
+  print_string "\n"
 
 let draw board =
-  (* clear screen *)
   let _ = Sys.command "clear" in
   ranks |> List.iter (fun rank -> print_line board rank)
-
-(* tile board file rank -> returns the specified tile *)

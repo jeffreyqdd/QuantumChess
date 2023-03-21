@@ -66,4 +66,5 @@ val player_turn : t -> color
 (** [player_turn board] is the player turn of the current board [t] *)
 
 val tile : t -> char -> int -> tile
-(** [tile board file rank] is the tile represented by [file] and [rank] *)
+(** [tile board file rank] is the tile represented by [file] and [rank]. [file]
+    is in range 0..7 and [rank] is in rank a..h *)
