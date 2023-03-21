@@ -1,6 +1,9 @@
 (include_subdirs unqualified)
 
 (library
- (name lib)
+ (name quantum)
  (public_name Quantum)
- (modules board command state engine frontend))
+ (libraries str)
+ (modules board command state engine frontend)
+ (instrumentation
+  (backend bisect_ppx)))
