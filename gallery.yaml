@@ -1,0 +1,36 @@
+---
+# Members of your group.
+group:
+  - name: Jeffrey Qian 
+    netid: jq54
+  - name: Alex Ni 
+    netid: awn33
+  - name: Jason Zheng
+    netid: jqz4
+  - name: Andy Lu
+    netid: all268
+
+# Your PM.
+pm:
+  name: Allen Wang 
+  netid: aw578@cornell.edu 
+# Set to false if you don't want your gallery entry to be public.
+publish: true
+# Pithy title
+title: "Quantum Chess"
+# OK if this is a Cornell Github link, but public gallery viewers won't be able to see it.
+git-repo: "https://github.com/jeffreyqdd/QuantumChess"
+# If you have no demo screencast, replace the url string with an empty string ""
+demo-video-url: ""
+# Write a short, attention-grabbing description of your project.
+desc: >
+  Quantum chess puts a unique twist on the the rulset of classical chess. 
+  On top of the familar rules of regular chess, pieces in quantum chess
+  can perform "split" moves that leave the piece in superposition at two
+  locations. Pieces in superposition exist in a state of existing and 
+  not-existing and you don't know which is which until you measure and collapse 
+  the state.
+
+  Our project supports playing a game of quantum chess against person player or
+  a computer. You can chose to play the game over a fun command-line application, 
+  or launch a webgui that can play quantum chess over LAN with other people. 
