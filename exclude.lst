@@ -1,4 +1,7 @@
 _build/*
+_coverage/*
 .DS_Store
 *.zip
-.vscode
+.vscode/*
+.bash_history
+*.coverage
