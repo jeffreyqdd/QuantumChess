@@ -3,12 +3,20 @@ open State
 exception Malformed of string
 exception Empty of string
 
-type command = {
-  start_tile : tile;
-  end_tile : tile;
-  piece_id : int;
+type move_phrase = {
+  id : int;
+  start_tiles : tile option * tile option;
+  end_tiles : tile option * tile option;
 }
-(** The type representing a command issued to the board*)
+(** The phrase representing a move, split, or merge *)
+
+type command =
+| Move of move_phrase
+| Help
+| Observe
+| Resign
+| Quit
+(** The type representing a command issued to the board *)
 
 val parse : string -> command
 (** [parse s] parses [s] into a command type. The input syntax consists of

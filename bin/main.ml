@@ -3,6 +3,6 @@ open Board
 open Frontend
 
 let _ =
-  let board = QFen.init in
+  let board = init in
   ANSITerminal.print_string [ ANSITerminal.red ] "Welcome to quantum chess!\n";
-  draw board
+  draw board 'a' 0

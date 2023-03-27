@@ -37,6 +37,8 @@ let print_line (board : Board.t) (rank : int) : unit =
   files |> List.iter (fun file -> print_string (tile board file rank));
   print_string "\n"
 
-let draw board =
+let draw board file rank =
   let _ = Sys.command "clear" in
   ranks |> List.iter (fun rank -> print_line board rank)
+
+let tile_info tile = raise (Failure "Unimplemented: Frontend.tile_info")

@@ -11,6 +11,7 @@ type piece_name =
   | King  (** The type representing the piece name on the board *)
 
 type piece = {
+  id : int;
   name : piece_name;
   color : color;
 }

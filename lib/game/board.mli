@@ -57,10 +57,10 @@ module QFen : sig
 
   val fen_from_board : t -> string
   (**[fen_from_board b] serializes [b] into a QFen.*)
-
-  val init : t
-  (**[init] evaluates to the board state denoted in the fen [start]*)
 end
+
+val init : t
+(**[init] evaluates to the board state denoted in the fen [start]*)
 
 val player_turn : t -> color
 (** [player_turn board] is the player turn of the current board [t] *)
@@ -68,3 +68,7 @@ val player_turn : t -> color
 val tile : t -> char -> int -> tile
 (** [tile board file rank] is the tile represented by [file] and [rank]. [file]
     is in range 0..7 and [rank] is in rank a..h *)
+
+val set_tile : t -> char -> int -> tile -> t
+(** [set_tile board file rank tile] is the board where the tile represented by
+    [file] and [rank] in [board] is replaced with [tile] *)
