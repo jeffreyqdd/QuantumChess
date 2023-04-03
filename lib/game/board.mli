@@ -57,10 +57,10 @@ module QFen : sig
 
   val fen_from_board : t -> string
   (** [fen_from_board b] serializes [b] into a QFen. *)
-
-  val init : t
-  (** [init] evaluates to the board state denoted in the fen [start] *)
 end
+
+val init : t
+(** [init] evaluates to the board state denoted in the fen [start] *)
 
 val player_turn : t -> color
 (** [player_turn board] is the player turn of the current board [t] *)

@@ -19,22 +19,11 @@ type t = {
   brick_on_pipi_squares : int list;
 }
 
-(* ================================================================== *)
-(* ========== Public Functions that belong to module Board ========== *)
-(* ================================================================== *)
-let int_of_file c = int_of_char c - int_of_char 'a'
-let file_of_int n = n + int_of_char 'a' |> char_of_int
-let player_turn board = board.turn
-
-let tile board file rank =
-  List.fold_left
-    (fun acc q_piece -> (IntMap.find q_piece board.pieces).piece :: acc)
-    []
-    board.board.(rank).(int_of_file file)
-
 (* ============================================== *)
 (* ========== Private Helper Functions ========== *)
 (* ============================================== *)
+let int_of_file c = int_of_char c - int_of_char 'a'
+let file_of_int n = n + int_of_char 'a' |> char_of_int
 let pieces_at board file rank = board.board.(rank).(int_of_file file)
 let qpiece_of_id board id = IntMap.find id board.pieces
 
@@ -335,6 +324,16 @@ module QFen = struct
     let p4 = str_of_castling_rights board in
     let p5 = str_of_pipi board in
     p1 ^ " " ^ p2 ^ " " ^ p3 ^ " " ^ p4 ^ " " ^ p5
-
-  let init = board_from_fen start
 end
+
+(* ================================================================== *)
+(* ========== Public Functions that belong to module Board ========== *)
+(* ================================================================== *)
+let init = QFen.board_from_fen QFen.start
+let player_turn board = board.turn
+
+let tile board file rank =
+  List.fold_left
+    (fun acc q_piece -> (IntMap.find q_piece board.pieces).piece :: acc)
+    []
+    board.board.(rank).(int_of_file file)
