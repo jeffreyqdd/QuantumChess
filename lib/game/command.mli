@@ -8,7 +8,7 @@ type command = {
   end_tile : tile;
   piece_id : int;
 }
-(** The type representing a command issued to the board*)
+(** The type representing a command issued to the board *)
 
 val parse : string -> command
 (** [parse s] parses [s] into a command type. The input syntax consists of
