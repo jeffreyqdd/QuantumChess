@@ -331,4 +331,5 @@ let tile board file rank =
     []
     board.board.(rank).(int_of_file file)
 
-let set_tile = raise (Failure "Unimplemented: Board.set_tile")
+let set_tile board file rank tile =
+  raise (Failure "Unimplemented: Board.set_tile")
