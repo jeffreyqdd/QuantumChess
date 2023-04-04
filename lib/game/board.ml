@@ -337,3 +337,5 @@ let tile board file rank =
     (fun acc q_piece -> (IntMap.find q_piece board.pieces).piece :: acc)
     []
     board.board.(rank).(int_of_file file)
+
+let set_tile = raise (Failure "Unimplemented: Board.set_tile")
