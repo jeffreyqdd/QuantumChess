@@ -10,12 +10,6 @@ type piece_name =
   | Queen
   | King  (** The type representing the piece name on the board *)
 
-type piece_type = {
-  name : piece_name;
-  color : color;
-}
-(** The name and color of a piece *)
-
 type position = {
   file : char;
   rank : int;
@@ -25,7 +19,8 @@ type position = {
 
 type piece = {
   id : int;
-  piece_type : piece_type;
+  name : piece_name;
+  color : color;
   superpositions : position list;
   capture_attempt : bool;
 }
