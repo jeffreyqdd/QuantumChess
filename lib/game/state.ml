@@ -16,10 +16,17 @@ type piece_type = {
 }
 (** The name and color of a piece *)
 
+type position = {
+  file : char;
+  rank : int;
+  probability : float;
+}
+(** The probability that a piece is on the tile represented by [file] and [rank] *)
+
 type piece = {
   id : int;
   piece_type : piece_type;
-  superpositions : (char * int) list;
+  superpositions : position list;
   capture_attempt : bool;
 }
 (** The type representing a piece on the board *)
