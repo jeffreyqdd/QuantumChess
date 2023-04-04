@@ -1,15 +1,8 @@
 open State
 module IntMap = Map.Make (Int)
 
-type quantum_piece = {
-  id : int; (*TODO: remove this*)
-  piece : piece;
-  superpositions : (char * int) list;
-  capture_attempt : bool;
-}
-
 type t = {
-  pieces : quantum_piece IntMap.t;
+  pieces : piece IntMap.t;
   board : int list array array; (*access with board.(rank).(file)*)
   turn : color;
   white_kingside_castle : bool;
@@ -30,7 +23,7 @@ let qpiece_of_id board id = IntMap.find id board.pieces
 let place_piece board piece_type id file rank =
   let add_superposition board piece_type id file rank =
     let curr_piece = IntMap.find id board.pieces in
-    if curr_piece.piece <> piece_type then
+    if curr_piece.piece_type <> piece_type then
       raise (Failure "Cannot superimpose pieces of different types");
     let new_piece =
       {
@@ -45,7 +38,7 @@ let place_piece board piece_type id file rank =
       let new_piece =
         {
           id;
-          piece = piece_type;
+          piece_type;
           superpositions = [ (file, rank) ];
           capture_attempt = false;
         }
@@ -112,7 +105,7 @@ module QFen = struct
       | [] -> ""
       | h :: t ->
           let qpiece = qpiece_of_id board h in
-          str_of_piece_type qpiece.piece ^ string_of_int h ^ generate t
+          str_of_piece_type qpiece.piece_type ^ string_of_int h ^ generate t
     in
     generate square
 
@@ -334,7 +327,7 @@ let player_turn board = board.turn
 
 let tile board file rank =
   List.fold_left
-    (fun acc q_piece -> (IntMap.find q_piece board.pieces).piece :: acc)
+    (fun acc piece -> IntMap.find piece board.pieces :: acc)
     []
     board.board.(rank).(int_of_file file)
 

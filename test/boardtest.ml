@@ -34,13 +34,15 @@ let pp_list pp_fun lst =
   "[" ^ List.fold_left (fun acc x -> acc ^ " " ^ pp_piece x) "" lst ^ " ]"
 
 let qfen_init_pieces_test (name : string) (qfen : string)
-    (test_positions : (char * int * piece list) list) : test list =
+    (test_positions : (char * int * piece_type list) list) : test list =
   let board = QFen.board_from_fen qfen in
   let build_test b t =
     let file, rank, p = t in
     let test_name = String.make 1 file ^ string_of_int rank ^ " on " ^ name in
     test_name >:: fun _ ->
-    assert_equal p (Board.tile b file rank) ~printer:(pp_list pp_piece)
+    assert_equal p
+      (Board.tile b file rank |> List.map (fun piece -> piece.piece_type))
+      ~printer:(pp_list pp_piece)
   in
 
   List.fold_left
