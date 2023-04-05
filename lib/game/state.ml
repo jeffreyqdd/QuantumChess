@@ -17,14 +17,19 @@ type position = {
 }
 (** The probability that a piece is on the tile represented by [file] and [rank] *)
 
-type piece = {
-  id : int;
+type piece_type = {
   name : piece_name;
   color : color;
-  superpositions : position list;
-  capture_attempt : bool;
 }
 (** The type representing a piece on the board *)
 
-type tile = piece list
+type quantum_piece = {
+  id : int;
+  piece_type : piece_type;
+  superpositions : position list;
+  capture_attempt : bool;
+}
+(** The type representing a quantum piece on the board *)
+
+type tile = quantum_piece list
 (** The type representing the pieces on a tile *)

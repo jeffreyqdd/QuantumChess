@@ -2,7 +2,7 @@ open State
 module IntMap = Map.Make (Int)
 
 type t = {
-  pieces : piece IntMap.t;
+  pieces : quantum_piece IntMap.t;
   board : int list array array; (*access with board.(rank).(file)*)
   turn : color;
   white_kingside_castle : bool;
@@ -21,39 +21,28 @@ let pieces_at board file rank = board.board.(rank).(int_of_file file)
 let qpiece_of_id board id = IntMap.find id board.pieces
 
 let place_piece board piece_type id file rank =
-  let add_superposition board piece_type id file rank =
-    let curr_piece = IntMap.find id board.pieces in
-    if curr_piece.piece_type <> piece_type then
-      raise (Failure "Cannot superimpose pieces of different types");
-    let new_piece =
-      {
-        curr_piece with
-        superpositions = (file, rank) :: curr_piece.superpositions;
-      }
-    in
-    { board with pieces = IntMap.add id new_piece board.pieces }
-  in
   let register_piece board piece_type id file rank =
     if not (IntMap.mem id board.pieces) then
       let new_piece =
         {
           id;
           piece_type;
-          superpositions = [ (file, rank) ];
+          superpositions = [ { file; rank; probability = 1. } ];
           capture_attempt = false;
         }
       in
       { board with pieces = IntMap.add id new_piece board.pieces }
-    else raise (Failure "Piece already exists -- cannot register")
+    else
+      raise
+        (Failure
+           ("Piece with id " ^ string_of_int id
+          ^ " already exists -- cannot register"))
   in
   (*regardless, we place the piece on board (TODO, REFACTOR)*)
   board.board.(rank).(int_of_file file) <-
     id :: board.board.(rank).(int_of_file file);
 
-  if IntMap.mem id board.pieces then
-    (*piece id exists, so we update super position*)
-    add_superposition board piece_type id file rank
-  else register_piece board piece_type id file rank
+  register_piece board piece_type id file rank
 
 let update_capture_state board id capture_state =
   let piece = qpiece_of_id board id in
@@ -182,18 +171,6 @@ module QFen = struct
       else final_string := !final_string ^ "/" ^ !rank_string
     done;
     !final_string
-
-  (* 
-     (*https://stackoverflow.com/questions/10893521/how-to-take-product-of-two-list-in-ocaml*)
-     let cartesian a b = List.concat (List.map (fun e -> List.map (fun e' -> (e,
-     e')) b) a) in let all_tiles = cartesian [ 7; 6; 5; 4; 3; 2; 1; 0 ] [ 'a';
-     'b'; 'c'; 'd'; 'e'; 'f'; 'g'; 'h' ] in let rec iter_through lst = match lst
-     with | [] -> "" | h :: t -> let rank_num = fst h in let file_char = snd h
-     in let one_rank = List.fold_left (fun acc q_piece -> str_of_piece_type
-     (IntMap.find q_piece board.pieces).piece ^ string_of_int (IntMap.find
-     q_piece board.pieces).id ^ ":" ^ acc) ""
-     board.board.(rank_num).(int_of_file file_char) in one_rank ^ iter_through t
-     in iter_through all_tiles *)
 
   let capture_attempts_of_str board str =
     if str = "-" then board

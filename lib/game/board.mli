@@ -15,8 +15,8 @@ type t
       uppercase refer to the white pieces. The second to third char is an id.
       For example: n1 is a black knight with an id of 1.
 
-    - Important: pieces with the same id are denote its superpositions. However,
-      the piece type and color must be the same.
+    - Important: pieces with the same id are not allowed. Superpositions cannot
+      be encoded as a string. Doing so will "destroy" the superposition.
 
     A QFen consists of "<piece string> <capture_attemps> <turn> <castling
     rights> <en passant>". Each section is space deliminated
@@ -26,7 +26,7 @@ type t
       There can be mutiple pieces per tile. The string starts on the a8 square
       and makes its way to the h1 square. eg. (a board with 8 black pawns on
       their starting position and a black knight in superposition:
-      "8/p0:p1:p2:p3:p4:p5:p6:p7/n10:1:n10:5/8/8/8/8/8")
+      "8/p0:p1:p2:p3:p4:p5:p6:p7/8/8/8/8/8/8")
 
     - capture_attempts: numbers corresponding to piece ids deliminated by
       colons. Each number refers to the piece that is currently. If a piece is
