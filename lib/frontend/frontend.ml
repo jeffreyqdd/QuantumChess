@@ -30,13 +30,15 @@ let piece_to_string (p : State.piece_name) (c : State.color) : string =
 let tile (board : Board.t) (file : char) (rank : int) : string =
   match Board.tile board file rank with
   | [] -> "."
-  | h :: t -> piece_to_string h.name h.color
+  | h :: t -> piece_to_string h.piece_type.name h.piece_type.color
 
 (** [print_line board rank] prints the line in [board] represented by [rank] *)
 let print_line (board : Board.t) (rank : int) : unit =
   files |> List.iter (fun file -> print_string (tile board file rank));
   print_string "\n"
 
-let draw board =
+let draw board file rank =
   let _ = Sys.command "clear" in
   ranks |> List.iter (fun rank -> print_line board rank)
+
+let tile_info tile = raise (Failure "Unimplemented: Frontend.tile_info")

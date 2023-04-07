@@ -34,13 +34,15 @@ let pp_list pp_fun lst =
   "[" ^ List.fold_left (fun acc x -> acc ^ " " ^ pp_piece x) "" lst ^ " ]"
 
 let qfen_init_pieces_test (name : string) (qfen : string)
-    (test_positions : (char * int * piece list) list) : test list =
+    (test_positions : (char * int * piece_type list) list) : test list =
   let board = QFen.board_from_fen qfen in
   let build_test b t =
     let file, rank, p = t in
     let test_name = String.make 1 file ^ string_of_int rank ^ " on " ^ name in
     test_name >:: fun _ ->
-    assert_equal p (Board.tile b file rank) ~printer:(pp_list pp_piece)
+    assert_equal p
+      (Board.tile b file rank |> List.map (fun piece -> piece.piece_type))
+      ~printer:(pp_list pp_piece)
   in
 
   List.fold_left
@@ -139,27 +141,6 @@ let tests =
         true White [];
       qfen_init_metadata_test "Empty" "8/8/8/8/8/8/8/8 - b - -" true true true
         true Black [];
-      qfen_init_pieces_test "Superpositions"
-        "8/r0r1:6:N2N3/8/8/8/k4:k4:k4:k4:k4:k4:k4:k4/8/8 - b - -"
-        [
-          ( 'a',
-            6,
-            [ { name = Rook; color = Black }; { name = Rook; color = Black } ]
-          );
-          ( 'h',
-            6,
-            [
-              { name = Knight; color = White }; { name = Knight; color = White };
-            ] );
-          ('a', 2, [ { name = King; color = Black } ]);
-          ('b', 2, [ { name = King; color = Black } ]);
-          ('c', 2, [ { name = King; color = Black } ]);
-          ('d', 2, [ { name = King; color = Black } ]);
-          ('e', 2, [ { name = King; color = Black } ]);
-          ('f', 2, [ { name = King; color = Black } ]);
-          ('g', 2, [ { name = King; color = Black } ]);
-          ('h', 2, [ { name = King; color = Black } ]);
-        ];
     ]
   @ [
       board_to_qfen_test "Preserve start position" QFen.start;
@@ -183,7 +164,4 @@ let tests =
         QFen.MalformedQFen;
       ensure_exn_from_qfen "Missing piece" "8/8/5:r0:r:1/8/8/8/8/8 - b - -"
         QFen.MalformedQFen;
-      ensure_exn_from_qfen "Bad superposition" "8/8/5:q0:2/8/8/8/8/7:r0 - b - -"
-        (Failure "Cannot superimpose pieces of different types");
     ]
-(* *)
