@@ -26,7 +26,7 @@ let is_legal_move (name : piece_name) (start : coord) (finish : coord) : bool =
   | Pawn | Rook | Knight | Bishop | Queen | King -> failwith "lol"
 
 (** [move_path start finish] is a list of all coordinates between [start] and
-    [finish] *)
+    [finish] in the order of traversal sequence. *)
 let move_path (start : coord) (finish : coord) : coord list =
   raise (Failure "Unimplemented: Move.path")
 
@@ -39,10 +39,32 @@ let is_valid_move (phrase : Command.move_phrase) : bool =
     standard move, a merge move, or a split move *)
 let specify_move (phrase : Command.move_phrase) : move_type = failwith "Unim"
 
-(** [coord_checker square] checks whether a coordinate location on a certain
-    coord has a piece, has superposition piece(s), or is empty. *)
-let coord_checker (square : coord) : occupancy =
-  raise (Failure "Unimplmented: Move.coord_checker")
+(** [probability piece_locale file rank] returns the probability of a piece at a
+    certain position based on [file] and [rank] in the position list
+    [piece_locale]. *)
+let probability (piece_locale : position list) (file : char) (rank : int) :
+    float =
+  List.fold_left
+    (fun acc x ->
+      if x.file = file && x.rank = rank then acc +. x.probability else acc)
+    0.0 piece_locale
+
+(** [coord_checker board square] checks whether a coordinate location on a
+    certain coord [square] has a piece, has superposition piece(s), or is empty
+    in the board state [board]. *)
+let coord_checker (board : Board.t) (square : coord) : occupancy =
+  let file = fst square in
+  let rank = snd square in
+  let pieces = Board.tile board file rank in
+  let max_percentage =
+    List.fold_left
+      (fun acc qpiece -> probability qpiece.superpositions file rank)
+      0.0 pieces
+  in
+  match max_percentage with
+  | 0.0 -> Empty
+  | 100.0 -> Stable
+  | _ -> Unstable
 
 (** [measurement board square] is the board after measurement occurs on
     [square]. Measurement checks to see whether the piece on [square] actually
