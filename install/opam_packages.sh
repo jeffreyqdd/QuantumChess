@@ -11,6 +11,7 @@ packages=(
   ocamlformat 
   ocamlformat-rpc
   ANSITerminal
+  curses
 )
 
 opam update -y
