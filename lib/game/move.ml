@@ -67,7 +67,7 @@ let piece_direction (name : piece_name) (start : coord) (finish : coord) :
       match (horizontal, vertical) with
       | true, false -> if y' > y then N else S
       | false, true -> if x' > x then E else W
-      | _ -> failwith "dummy you can't have a rook move diagonal or stay ")
+      | _ -> failwith "dummy you can't have a rook move diagonal or stay still")
   | Queen | King -> (
       match (horizontal, vertical) with
       | true, false -> if y' > y then N else S
