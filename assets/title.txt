@@ -12,4 +12,4 @@ c - create LAN game
 e - join LAN game                                                           
                                                                             
 q - quit game                                                               
-h - help                                                                    
+a - help                                                                    
