@@ -3,7 +3,7 @@
 (library
  (name quantum)
  (public_name Quantum)
- (libraries str)
- (modules board command state engine frontend move)
+ (libraries str ANSITerminal)
+ (modules terminalUtil board command state engine frontend move)
  (instrumentation
   (backend bisect_ppx)))

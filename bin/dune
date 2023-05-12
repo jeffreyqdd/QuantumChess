@@ -1,3 +1,4 @@
 (executable
  (name main)
- (libraries Quantum ANSITerminal))
+ (modules main)
+ (libraries Quantum))

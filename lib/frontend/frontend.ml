@@ -41,4 +41,30 @@ let draw board file rank =
   let _ = Sys.command "clear" in
   ranks |> List.iter (fun rank -> print_line board rank)
 
+let string_of_board ?(render_highlight = false) board tfile trank =
+  let board_str = ref [] in
+  for rank = 7 downto 0 do
+    let str = ref (string_of_int (8 - rank) ^ " ") in
+    for i = Char.code 'a' to Char.code 'h' do
+      let file = Char.chr i in
+      let tile_str = tile board file rank in
+      let modified_tstr =
+        if file = tfile && rank = 8 - trank && render_highlight then
+          ANSITerminal.sprintf
+            [ ANSITerminal.Background ANSITerminal.Blue ]
+            "%s" tile_str
+        else tile_str
+      in
+      str := !str ^ modified_tstr ^ " "
+    done;
+    board_str := !str :: !board_str
+  done;
+  let file_str =
+    "  "
+    ^ String.concat " "
+        (ranks
+        |> List.map (fun x -> Char.chr (Char.code 'a' + x) |> String.make 1))
+  in
+  List.rev (file_str :: List.rev !board_str)
+
 let tile_info tile = raise (Failure "Unimplemented: Frontend.tile_info")
