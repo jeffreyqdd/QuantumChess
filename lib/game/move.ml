@@ -241,10 +241,7 @@ let full_probability_piece board square =
       match
         Board.tile board file rank
         |> List.filter (fun piece ->
-               (piece.superpositions
-               |> List.find (fun position ->
-                      position.file = file && position.rank = rank))
-                 .probability = 100.0)
+               position_probability board square piece = 100.0)
       with
       | [] -> None
       | [ h ] -> Some h
@@ -260,13 +257,7 @@ let measure_piece board square =
           let events =
             Board.tile board file rank
             |> List.map (fun piece ->
-                   let probability =
-                     (piece.superpositions
-                     |> List.find (fun position ->
-                            position.file = file && position.rank = rank))
-                       .probability
-                   in
-                   (piece, probability))
+                   (piece, position_probability board square piece))
           in
           measure events)
 
@@ -305,11 +296,14 @@ let piece_without_superpositions board square piece =
 
 (** [board_pushoff_tile board square] is the board where every piece on [square]
     is pushed off and its probabilities reallocated to other tiles *)
-let board_pushoff_tile board square = board
-(* let bank = [] in match square with | file, rank -> Board.tile board file rank
-   |> List.iter (fun piece -> let probability = (piece.superpositions |>
-   List.find (fun position -> position.file = file && position.rank =
-   rank)).probability in ) *)
+let board_pushoff_tile board square =
+  let bank = [] in
+  match square with
+  | file, rank ->
+      Board.tile board file rank
+      |> List.iter (fun piece ->
+             let probability = position_probability board square piece in
+             ())
 
 (** [measurement board square] is the board after measurement occurs on
     [square]. We perform measurement as follows:
