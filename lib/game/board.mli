@@ -74,7 +74,7 @@ val piece_probability : t -> coord -> quantum_piece -> float
 
 val delete_piece : t -> coord -> quantum_piece -> t
 (** [delete_piece board square piece] is the board where [piece] is removed from
-    all tiles, and all squares are removed from [piece.superpositions]. *)
+    all tiles. *)
 
 val set_piece : t -> quantum_piece -> quantum_piece -> t
 (** [set_piece board piece piece'] is the board where [piece] is replaced with
