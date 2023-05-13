@@ -54,17 +54,8 @@ let string_of_position position =
   ^ string_of_float position.probability
 
 let string_of_list element lst =
-  let pp_elts lst =
-    let rec loop n acc = function
-      | [] -> acc
-      | [ h ] -> acc ^ element h
-      | h1 :: (h2 :: t as t') ->
-          if n = 100 then acc ^ "..." (* stop printing long list *)
-          else loop (n + 1) (acc ^ element h1 ^ "; ") t'
-    in
-    loop 0 "" lst
-  in
-  "[" ^ pp_elts lst ^ "]"
+  let f x = element x in
+  "[" ^ (List.map f lst |> String.concat "; ") ^ "]"
 
 let string_of_piece piece =
   string_of_piece_name piece.piece_type.name
