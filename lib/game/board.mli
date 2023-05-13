@@ -72,6 +72,10 @@ val piece_probability : t -> coord -> quantum_piece -> float
 (** [piece_probability board square piece] is the probability that [piece] is at
     [square]. *)
 
+val tile_probability : t -> coord -> float
+(** [tile_probability board square] is the total probability of all pieces at
+    [square] *)
+
 val add_piece_tile : t -> coord -> quantum_piece -> float -> t
 (** [add_piece_tile board square piece probability] is the board where [piece]
     is added to the tile at [square], and [square] is added to

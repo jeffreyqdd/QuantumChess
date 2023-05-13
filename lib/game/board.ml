@@ -319,6 +319,12 @@ let piece_probability board square piece =
   (piece.superpositions |> List.find (fun pos -> (pos.file, pos.rank) = square))
     .probability
 
+let tile_probability board square =
+  tile board square
+  |> List.fold_left
+       (fun acc piece -> acc +. piece_probability board square piece)
+       0.0
+
 let add_piece_tile board square piece probability =
   match square with
   | file, rank ->
