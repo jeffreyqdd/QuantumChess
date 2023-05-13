@@ -54,6 +54,7 @@ let measure_test (name : string) (board : Board.t) (square : coord)
   in
   assert_equal result true
 
+(* Test 1 *)
 let input1 =
   let board = ref (Board.QFen.board_from_fen "r0/8/8/8/8/8/8/8 - b - -") in
   let black_rook_id = (Board.piece_by_tile !board ('a', 7)).id in
@@ -83,7 +84,7 @@ let input1 =
       20.0;
   !board
 
-let expected1 =
+let expected1_1 =
   let board = ref (Board.QFen.board_from_fen "r0/8/8/8/8/8/8/8 - b - -") in
   let black_rook_id = (Board.piece_by_tile !board ('a', 7)).id in
 
@@ -96,7 +97,7 @@ let expected1 =
       100.0;
   !board
 
-let expected2 =
+let expected1_2 =
   let board = ref (Board.QFen.board_from_fen "r0/8/8/8/8/8/8/8 - b - -") in
   let black_rook_id = (Board.piece_by_tile !board ('a', 7)).id in
 
@@ -121,10 +122,174 @@ let expected2 =
       25.0;
   !board
 
+(* Test 2 *)
+let input2 =
+  let board = ref (Board.QFen.board_from_fen "r0/b1/k2/8/8/8/8/8 - b - -") in
+  let black_rook_id = (Board.piece_by_tile !board ('a', 7)).id in
+  let black_bishop_id = (Board.piece_by_tile !board ('a', 6)).id in
+  let black_king_id = (Board.piece_by_tile !board ('a', 5)).id in
+
+  board :=
+    black_rook_id |> Board.piece_by_id !board
+    |> Board.remove_piece_tile !board ('a', 7);
+  board :=
+    black_bishop_id |> Board.piece_by_id !board
+    |> Board.remove_piece_tile !board ('a', 6);
+  board :=
+    black_king_id |> Board.piece_by_id !board
+    |> Board.remove_piece_tile !board ('a', 5);
+
+  board :=
+    Board.add_piece_tile !board ('a', 7)
+      (black_rook_id |> Board.piece_by_id !board)
+      50.0;
+  board :=
+    Board.add_piece_tile !board ('b', 7)
+      (black_rook_id |> Board.piece_by_id !board)
+      25.0;
+  board :=
+    Board.add_piece_tile !board ('c', 7)
+      (black_rook_id |> Board.piece_by_id !board)
+      25.0;
+
+  board :=
+    Board.add_piece_tile !board ('a', 6)
+      (black_bishop_id |> Board.piece_by_id !board)
+      50.0;
+  board :=
+    Board.add_piece_tile !board ('b', 6)
+      (black_bishop_id |> Board.piece_by_id !board)
+      25.0;
+  board :=
+    Board.add_piece_tile !board ('c', 6)
+      (black_bishop_id |> Board.piece_by_id !board)
+      25.0;
+
+  board :=
+    Board.add_piece_tile !board ('a', 5)
+      (black_king_id |> Board.piece_by_id !board)
+      50.0;
+  board :=
+    Board.add_piece_tile !board ('b', 5)
+      (black_king_id |> Board.piece_by_id !board)
+      25.0;
+  board :=
+    Board.add_piece_tile !board ('c', 5)
+      (black_king_id |> Board.piece_by_id !board)
+      25.0;
+  !board
+
+let expected2_1 =
+  let board = ref (Board.QFen.board_from_fen "r0/b1/k2/8/8/8/8/8 - b - -") in
+  let black_rook_id = (Board.piece_by_tile !board ('a', 7)).id in
+  let black_bishop_id = (Board.piece_by_tile !board ('a', 6)).id in
+  let black_king_id = (Board.piece_by_tile !board ('a', 5)).id in
+
+  board :=
+    black_rook_id |> Board.piece_by_id !board
+    |> Board.remove_piece_tile !board ('a', 7);
+  board :=
+    black_bishop_id |> Board.piece_by_id !board
+    |> Board.remove_piece_tile !board ('a', 6);
+  board :=
+    black_king_id |> Board.piece_by_id !board
+    |> Board.remove_piece_tile !board ('a', 5);
+
+  board :=
+    Board.add_piece_tile !board ('b', 7)
+      (black_rook_id |> Board.piece_by_id !board)
+      100.0;
+
+  board :=
+    Board.add_piece_tile !board ('a', 6)
+      (black_bishop_id |> Board.piece_by_id !board)
+      50.0;
+  board :=
+    Board.add_piece_tile !board ('b', 6)
+      (black_bishop_id |> Board.piece_by_id !board)
+      25.0;
+  board :=
+    Board.add_piece_tile !board ('c', 6)
+      (black_bishop_id |> Board.piece_by_id !board)
+      25.0;
+
+  board :=
+    Board.add_piece_tile !board ('a', 5)
+      (black_king_id |> Board.piece_by_id !board)
+      50.0;
+  board :=
+    Board.add_piece_tile !board ('b', 5)
+      (black_king_id |> Board.piece_by_id !board)
+      25.0;
+  board :=
+    Board.add_piece_tile !board ('c', 5)
+      (black_king_id |> Board.piece_by_id !board)
+      25.0;
+  !board
+
+let expected2_2 =
+  let board = ref (Board.QFen.board_from_fen "r0/b1/k2/8/8/8/8/8 - b - -") in
+  let black_rook_id = (Board.piece_by_tile !board ('a', 7)).id in
+  let black_bishop_id = (Board.piece_by_tile !board ('a', 6)).id in
+  let black_king_id = (Board.piece_by_tile !board ('a', 5)).id in
+
+  board :=
+    black_rook_id |> Board.piece_by_id !board
+    |> Board.remove_piece_tile !board ('a', 7);
+  board :=
+    black_bishop_id |> Board.piece_by_id !board
+    |> Board.remove_piece_tile !board ('a', 6);
+  board :=
+    black_king_id |> Board.piece_by_id !board
+    |> Board.remove_piece_tile !board ('a', 5);
+
+  board :=
+    Board.add_piece_tile !board ('a', 7)
+      (black_rook_id |> Board.piece_by_id !board)
+      62.5;
+  board :=
+    Board.add_piece_tile !board ('c', 7)
+      (black_rook_id |> Board.piece_by_id !board)
+      37.5;
+
+  board :=
+    Board.add_piece_tile !board ('a', 6)
+      (black_bishop_id |> Board.piece_by_id !board)
+      50.0;
+  board :=
+    Board.add_piece_tile !board ('b', 6)
+      (black_bishop_id |> Board.piece_by_id !board)
+      25.0;
+  board :=
+    Board.add_piece_tile !board ('c', 6)
+      (black_bishop_id |> Board.piece_by_id !board)
+      25.0;
+
+  board :=
+    Board.add_piece_tile !board ('a', 5)
+      (black_king_id |> Board.piece_by_id !board)
+      50.0;
+  board :=
+    Board.add_piece_tile !board ('b', 5)
+      (black_king_id |> Board.piece_by_id !board)
+      25.0;
+  board :=
+    Board.add_piece_tile !board ('c', 5)
+      (black_king_id |> Board.piece_by_id !board)
+      25.0;
+  !board
+
 let tests =
   [
     measure_test
       "Black rook on a7/b7/c7/d7/e7 is measured to either be on a7 only with \
        100% probability or b7/c7/d7/e7 with 25% probability each"
-      input1 ('a', 7) [ expected1; expected2 ];
+      input1 ('a', 7)
+      [ expected1_1; expected1_2 ];
+    measure_test
+      "Black rook on a7/b7/c7, black bishop on a6/b6/c6, black king on \
+       a5/b5/c5 is measured to either be a rook on b7 only with 100% \
+       probability or a rook on a7:62.5 and b7:37.5 probability each"
+      input2 ('b', 7)
+      [ expected2_1; expected2_2 ];
   ]
