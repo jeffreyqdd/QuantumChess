@@ -221,14 +221,15 @@ let full_probability_piece board square : quantum_piece option =
 (** [measure_piece board square] is the piece measured to be on [square] *)
 let measure_piece board square =
   match full_probability_piece board square with
-  | Some piece -> piece
+  | Some piece -> Some piece
   | None ->
       let events =
         Board.tile board square
         |> List.map (fun piece ->
                (piece, Board.piece_probability board square piece))
       in
-      measure events
+      let piece = try Some (measure events) with _ -> None in
+      piece
 
 (** [measurement board square] is the board after measurement occurs on
     [square]. We perform measurement as follows:
@@ -273,34 +274,41 @@ let measure_piece board square =
 let rec measurement (board : Board.t) (square : coord)
     (bank : float IntMap.t ref) : Board.t =
   match square with
-  | file, rank ->
+  | file, rank -> (
       (* Find the piece that actually exists on [square] *)
-      let piece = measure_piece board square in
+      match measure_piece board square with
+      | Some piece ->
+          (* Delete all other probabilities of piece *)
+          let board = Board.delete_piece board piece in
 
-      (* Delete all other probabilities *)
-      let board = Board.delete_piece board square piece in
+          (* Reallocate all other superpositions *)
+          let board' = reallocate_tile board square bank in
 
-      (* Reallocate all other superpositions *)
-      let board' = reallocate_tile board square bank in
-
-      (* Add piece back to board *)
-      let piece' = { piece with superpositions = [] } in
-      Board.add_piece_tile board' square piece' 100.0
+          (* Add piece back to board *)
+          let piece' = { piece with superpositions = [] } in
+          Board.add_piece_tile board' square piece' 100.0
+      | None ->
+          (* Reallocate all superpositions on the tile *)
+          let board' = reallocate_tile board square bank in
+          board')
 
 (** [reallocate_piece board square piece] pushes [piece] off of [square] and
     reallocates the probabilities to all remaining superpositions *)
 and reallocate_piece board square bank piece =
+  let get_curr_credits bank id =
+    try IntMap.find id !bank with Not_found -> 0.0
+  in
   let board = ref board in
   let probability = Board.piece_probability !board square piece in
-  let credits_to_add = IntMap.find piece.id !bank in
+  let curr_credits = get_curr_credits bank piece.id in
 
   (* Add probability to bank account and remove [piece] from [square] *)
-  bank := IntMap.add piece.id (probability +. credits_to_add) !bank;
+  bank := IntMap.add piece.id (probability +. curr_credits) !bank;
   board := Board.remove_piece_tile !board square piece;
 
   (* Attempt to evenly spread out the probabilities in the bank account *)
   while IntMap.find piece.id !bank > 0.0 do
-    let curr_balance = IntMap.find piece.id !bank in
+    let curr_balance = get_curr_credits bank piece.id in
     let num_positions = List.length piece.superpositions in
     let probability_chunk = curr_balance /. float_of_int num_positions in
     piece.superpositions
@@ -315,12 +323,17 @@ and reallocate_piece board square bank piece =
              board := Board.remove_piece_tile !board square' piece;
              board :=
                Board.add_piece_tile !board square' piece
-                 (curr_probability +. probability_chunk)
+                 (curr_probability +. probability_chunk);
+             bank :=
+               IntMap.add piece.id
+                 (get_curr_credits bank piece.id -. probability_chunk)
+                 !bank
              (* Else if one piece has probability = 100% on tile *))
            else if curr_probability +. probability_chunk = 100.0 then (
              board := Board.remove_piece_tile !board square' piece;
              board := Board.add_piece_tile !board square' piece 100.0;
-             board := measurement !board square' bank
+             board := measurement !board square' bank;
+             bank := IntMap.add piece.id 0.0 !bank
              (* Else if tile becomes super-stable *))
            else board := measurement !board square' bank)
   done;
