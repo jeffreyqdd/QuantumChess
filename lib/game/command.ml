@@ -5,8 +5,8 @@ exception Empty of string
 
 type move_phrase = {
   id : int;
-  start_tiles : tile option * tile option;
-  end_tiles : tile option * tile option;
+  start_tiles : coord option * coord option;
+  end_tiles : coord option * coord option;
 }
 (** The phrase representing a move, split, or merge *)
 

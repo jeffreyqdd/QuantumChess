@@ -10,6 +10,10 @@ type piece_name =
   | Queen
   | King  (** The type representing the piece name on the board *)
 
+type coord = char * int
+(** The type of a coordinate position on the board, represented as a tuple
+    (file, rank) *)
+
 type position = {
   file : char;
   rank : int;
