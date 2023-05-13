@@ -299,10 +299,7 @@ end
 (** [set_piece board piece piece'] is the board where [piece] is replaced with
     [piece']. *)
 let set_piece board piece piece' =
-  {
-    board with
-    pieces = IntMap.update piece.id (fun _ -> Some piece') board.pieces;
-  }
+  { board with pieces = IntMap.add piece.id piece' board.pieces }
 
 (* ================================================================== *)
 (* ========== Public Functions that belong to module Board ========== *)
