@@ -310,3 +310,30 @@ let tile board file rank =
 
 let set_tile board file rank tile =
   raise (Failure "Unimplemented: Board.set_tile")
+
+let piece_probability board square piece =
+  match square with
+  | file, rank ->
+      (piece.superpositions
+      |> List.find (fun pos -> pos.file = file && pos.rank = rank))
+        .probability
+
+let add_piece_tile board square piece probability =
+  match square with
+  | file, rank -> piece :: tile board file rank |> set_tile board file rank
+
+let remove_piece_tile board square piece =
+  match square with
+  | file, rank ->
+      tile board file rank
+      |> List.filter (fun piece' -> piece'.id <> piece.id)
+      |> set_tile board file rank
+
+let set_piece board piece piece' = failwith "Unimplemented: Board.set_piece"
+
+let delete_piece board square piece =
+  piece.superpositions
+  |> List.fold_left
+       (fun board_acc pos ->
+         remove_piece_tile board_acc (pos.file, pos.rank) piece)
+       board

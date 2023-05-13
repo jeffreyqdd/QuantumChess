@@ -70,5 +70,25 @@ val tile : t -> char -> int -> tile
     is in range 0..7 and [rank] is in rank a..h *)
 
 val set_tile : t -> char -> int -> tile -> t
-(** [set_tile board file rank tile] is the board where the tile represented by
-    [file] and [rank] in [board] is replaced with [tile] *)
+(** [set_tile board file rank tile] is the board where the tile at [square] is
+    replaced with [tile] *)
+
+val piece_probability : t -> coord -> quantum_piece -> float
+(** [piece_probability board square piece] is the probability that [piece] is at
+    [square] *)
+
+val add_piece_tile : t -> coord -> quantum_piece -> float -> t
+(** [add_piece_tile board square piece probability] is the board where [piece]
+    is added to [square] with [probability] *)
+
+val remove_piece_tile : t -> coord -> quantum_piece -> t
+(** [remove_piece_tile board square piece] is the board where [piece] is removed
+    from [square] *)
+
+val set_piece : t -> quantum_piece -> quantum_piece -> t
+(** [set_piece board piece piece'] is the board where [piece] is replaced with
+    [piece'] *)
+
+val delete_piece : t -> coord -> quantum_piece -> t
+(** [delete_piece board square piece] is the board where [piece] is removed from
+    all tiles *)
