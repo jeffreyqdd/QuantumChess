@@ -118,14 +118,22 @@ let handle_chess_page () =
       | Esc -> current_mode := Normal
       | Ins -> current_mode := Insertion
       | Quit -> flag := false
-      | Submit -> text_buffer := ""
+      | Submit ->
+          print_endline ("\n\n\n\n" ^ !text_buffer);
+          let command = Command.parse !text_buffer in
+          let _ =
+            match command with
+            | Move phrase -> board := Move.move !board phrase
+            | Resign -> ()
+            | Draw -> ()
+          in
+          text_buffer := ""
       | _ -> ());
-
       Render.background ();
       Render.draw Coords.board_start []
         (Frontend.string_of_board !board
            (Char.chr (fst !cursor_coord + Ascii.a))
-           (snd !cursor_coord) ~render_highlight:(!current_mode = Normal));
+           (snd !cursor_coord) ~render_highlight:true);
       if Coords.(!last_coord <> !cursor_coord) then last_coord := !cursor_coord;
       (try
          Render.draw Coords.data_start []
