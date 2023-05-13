@@ -308,8 +308,7 @@ let tile board file rank =
     []
     board.board.(rank).(int_of_file file)
 
-let set_tile board file rank tile =
-  raise (Failure "Unimplemented: Board.set_tile")
+let set_tile board square tile = raise (Failure "Unimplemented: Board.set_tile")
 
 let piece_probability board square piece =
   match square with
@@ -320,14 +319,14 @@ let piece_probability board square piece =
 
 let add_piece_tile board square piece probability =
   match square with
-  | file, rank -> piece :: tile board file rank |> set_tile board file rank
+  | file, rank -> piece :: tile board file rank |> set_tile board (file, rank)
 
 let remove_piece_tile board square piece =
   match square with
   | file, rank ->
       tile board file rank
       |> List.filter (fun piece' -> piece'.id <> piece.id)
-      |> set_tile board file rank
+      |> set_tile board (file, rank)
 
 let set_piece board piece piece' = failwith "Unimplemented: Board.set_piece"
 

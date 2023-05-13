@@ -189,7 +189,7 @@ let rec measure_piece_old (board : Board.t) (piece : quantum_piece) : Board.t =
     List.fold_left
       (fun acc position ->
         tile' acc position.file position.rank
-        |> Board.set_tile acc position.file position.rank)
+        |> Board.set_tile acc (position.file, position.rank))
       board piece.superpositions
   in
   (* Add [piece] back to the tile of [true_coord] *)
@@ -204,7 +204,7 @@ let rec measure_piece_old (board : Board.t) (piece : quantum_piece) : Board.t =
   let tile'' board file rank = Board.tile board file rank @ [ piece' ] in
   let board'' =
     match true_coord with
-    | f, r -> Board.set_tile board' f r (tile'' board' f r)
+    | f, r -> Board.set_tile board' (f, r) (tile'' board' f r)
   in
   (* Remove other pieces that are also occupying [true_coord] *)
   (* Make it so that other pieces have probabilities divided amongst all
@@ -254,11 +254,15 @@ let measure_piece board square =
 (** [remove_superpositions] is the piece where all superpositions are removed *)
 let remove_superpositions piece = { piece with superpositions = [] }
 
-(** [board_pushoff_tile board square] is the board where every piece on [square]
-    is pushed off and its probabilities reallocated to other tiles *)
-(* let board_pushoff_tile board square = let bank = [] in match square with |
-   file, rank -> Board.tile board file rank |> List.iter (fun piece -> let
-   probability = piece_square_probability board square piece in ()) *)
+(** [reallocate_tile board square] is the board where every piece on [square] is
+    pushed off and its probabilities reallocated to other tiles *)
+let reallocate_tile board square = board
+
+(** [reallocate_piece board square piece] pushes [piece] off of [square] and
+    reallocates the probabilities to all remaining superpositions *)
+let reallocate_piece bank board square piece = board
+(* match square with | file, rank -> let p = Board.piece_probability board
+   square piece in add_p_to_bank_account *)
 
 (** [measurement board square] is the board after measurement occurs on
     [square]. We perform measurement as follows:
@@ -307,8 +311,13 @@ let measurement (board : Board.t) (square : coord) : Board.t =
 
       (* Delete all other probabilities *)
       let board' = Board.delete_piece board square piece in
+
+      (* Reallocate all other superpositions *)
+      let board'' = reallocate_tile board square in
+
+      (* Add piece back to board *)
       let piece' = remove_superpositions piece in
-      Board.add_piece_tile board' square piece' 100.0
+      Board.add_piece_tile board'' square piece' 100.0
 
 (* ================================================================= *)
 (* ========== Public Functions that belong to module Move ========== *)
