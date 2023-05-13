@@ -5,7 +5,6 @@ open State
 module IntMap = Map.Make (Int)
 
 let _ =
-  let bank = ref IntMap.empty in
   let board = ref (QFen.board_from_fen "r0/b1/8/8/8/8/8/8 - b - -") in
   let black_rook_id = (Board.piece_by_tile !board ('a', 7)).id in
   let black_bishop_id = (Board.piece_by_tile !board ('a', 6)).id in
@@ -24,7 +23,7 @@ let _ =
   board :=
     Board.add_piece_tile !board ('a', 7)
       (black_rook_id |> Board.piece_by_id !board)
-      20.0;
+      100.0;
   board :=
     Board.add_piece_tile !board ('b', 7)
       (black_rook_id |> Board.piece_by_id !board)
@@ -49,7 +48,7 @@ let _ =
      (black_rook_id |> Board.piece_by_id !board); *)
   draw !board 'a' 0;
   print_endline " ";
-  board := Measure.measurement !board ('a', 7) bank;
+  board := Measure.measurement !board ('a', 7);
   draw !board 'a' 0;
   print_rook ();
   (* board := Board.add_piece_tile !board ('a', 7) black_rook 20.0; board :=

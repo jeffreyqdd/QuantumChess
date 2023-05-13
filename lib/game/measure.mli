@@ -1,8 +1,6 @@
 open State
 
-exception Illegal of string
-
-val measurement : Board.t -> coord -> float Map.Make(Int).t ref -> Board.t
+val measurement : Board.t -> coord -> Board.t
 (** [measurement board square] is the board after measurement occurs on
     [square]. We perform measurement as follows:
 
