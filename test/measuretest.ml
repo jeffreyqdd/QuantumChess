@@ -53,26 +53,11 @@ let input1 =
   board :=
     black_rook_id |> Board.piece_by_id !board
     |> Board.remove_piece_tile !board ('a', 7);
-  board :=
-    Board.add_piece_tile !board ('a', 7)
-      (black_rook_id |> Board.piece_by_id !board)
-      20.0;
-  board :=
-    Board.add_piece_tile !board ('b', 7)
-      (black_rook_id |> Board.piece_by_id !board)
-      20.0;
-  board :=
-    Board.add_piece_tile !board ('c', 7)
-      (black_rook_id |> Board.piece_by_id !board)
-      20.0;
-  board :=
-    Board.add_piece_tile !board ('d', 7)
-      (black_rook_id |> Board.piece_by_id !board)
-      20.0;
-  board :=
-    Board.add_piece_tile !board ('e', 7)
-      (black_rook_id |> Board.piece_by_id !board)
-      20.0;
+  board := Board.add_piece_tile !board ('a', 7) black_rook_id 20.0;
+  board := Board.add_piece_tile !board ('b', 7) black_rook_id 20.0;
+  board := Board.add_piece_tile !board ('c', 7) black_rook_id 20.0;
+  board := Board.add_piece_tile !board ('d', 7) black_rook_id 20.0;
+  board := Board.add_piece_tile !board ('e', 7) black_rook_id 20.0;
   !board
 
 let expected1_1 =
@@ -82,10 +67,7 @@ let expected1_1 =
   board :=
     black_rook_id |> Board.piece_by_id !board
     |> Board.remove_piece_tile !board ('a', 7);
-  board :=
-    Board.add_piece_tile !board ('a', 7)
-      (black_rook_id |> Board.piece_by_id !board)
-      100.0;
+  board := Board.add_piece_tile !board ('a', 7) black_rook_id 100.0;
   !board
 
 let expected1_2 =
@@ -95,22 +77,10 @@ let expected1_2 =
   board :=
     black_rook_id |> Board.piece_by_id !board
     |> Board.remove_piece_tile !board ('a', 7);
-  board :=
-    Board.add_piece_tile !board ('b', 7)
-      (black_rook_id |> Board.piece_by_id !board)
-      25.0;
-  board :=
-    Board.add_piece_tile !board ('c', 7)
-      (black_rook_id |> Board.piece_by_id !board)
-      25.0;
-  board :=
-    Board.add_piece_tile !board ('d', 7)
-      (black_rook_id |> Board.piece_by_id !board)
-      25.0;
-  board :=
-    Board.add_piece_tile !board ('e', 7)
-      (black_rook_id |> Board.piece_by_id !board)
-      25.0;
+  board := Board.add_piece_tile !board ('b', 7) black_rook_id 25.0;
+  board := Board.add_piece_tile !board ('c', 7) black_rook_id 25.0;
+  board := Board.add_piece_tile !board ('d', 7) black_rook_id 25.0;
+  board := Board.add_piece_tile !board ('e', 7) black_rook_id 25.0;
   !board
 
 (* Test 2 *)
@@ -130,44 +100,17 @@ let input2 =
     black_king_id |> Board.piece_by_id !board
     |> Board.remove_piece_tile !board ('a', 5);
 
-  board :=
-    Board.add_piece_tile !board ('a', 7)
-      (black_rook_id |> Board.piece_by_id !board)
-      50.0;
-  board :=
-    Board.add_piece_tile !board ('b', 7)
-      (black_rook_id |> Board.piece_by_id !board)
-      25.0;
-  board :=
-    Board.add_piece_tile !board ('c', 7)
-      (black_rook_id |> Board.piece_by_id !board)
-      25.0;
+  board := Board.add_piece_tile !board ('a', 7) black_rook_id 50.0;
+  board := Board.add_piece_tile !board ('b', 7) black_rook_id 25.0;
+  board := Board.add_piece_tile !board ('c', 7) black_rook_id 25.0;
 
-  board :=
-    Board.add_piece_tile !board ('a', 6)
-      (black_bishop_id |> Board.piece_by_id !board)
-      50.0;
-  board :=
-    Board.add_piece_tile !board ('b', 6)
-      (black_bishop_id |> Board.piece_by_id !board)
-      25.0;
-  board :=
-    Board.add_piece_tile !board ('c', 6)
-      (black_bishop_id |> Board.piece_by_id !board)
-      25.0;
+  board := Board.add_piece_tile !board ('a', 6) black_bishop_id 50.0;
+  board := Board.add_piece_tile !board ('b', 6) black_bishop_id 25.0;
+  board := Board.add_piece_tile !board ('c', 6) black_bishop_id 25.0;
 
-  board :=
-    Board.add_piece_tile !board ('a', 5)
-      (black_king_id |> Board.piece_by_id !board)
-      50.0;
-  board :=
-    Board.add_piece_tile !board ('b', 5)
-      (black_king_id |> Board.piece_by_id !board)
-      25.0;
-  board :=
-    Board.add_piece_tile !board ('c', 5)
-      (black_king_id |> Board.piece_by_id !board)
-      25.0;
+  board := Board.add_piece_tile !board ('a', 5) black_king_id 50.0;
+  board := Board.add_piece_tile !board ('b', 5) black_king_id 25.0;
+  board := Board.add_piece_tile !board ('c', 5) black_king_id 25.0;
   !board
 
 let expected2_1 =
@@ -186,36 +129,15 @@ let expected2_1 =
     black_king_id |> Board.piece_by_id !board
     |> Board.remove_piece_tile !board ('a', 5);
 
-  board :=
-    Board.add_piece_tile !board ('b', 7)
-      (black_rook_id |> Board.piece_by_id !board)
-      100.0;
+  board := Board.add_piece_tile !board ('b', 7) black_rook_id 100.0;
 
-  board :=
-    Board.add_piece_tile !board ('a', 6)
-      (black_bishop_id |> Board.piece_by_id !board)
-      50.0;
-  board :=
-    Board.add_piece_tile !board ('b', 6)
-      (black_bishop_id |> Board.piece_by_id !board)
-      25.0;
-  board :=
-    Board.add_piece_tile !board ('c', 6)
-      (black_bishop_id |> Board.piece_by_id !board)
-      25.0;
+  board := Board.add_piece_tile !board ('a', 6) black_bishop_id 50.0;
+  board := Board.add_piece_tile !board ('b', 6) black_bishop_id 25.0;
+  board := Board.add_piece_tile !board ('c', 6) black_bishop_id 25.0;
 
-  board :=
-    Board.add_piece_tile !board ('a', 5)
-      (black_king_id |> Board.piece_by_id !board)
-      50.0;
-  board :=
-    Board.add_piece_tile !board ('b', 5)
-      (black_king_id |> Board.piece_by_id !board)
-      25.0;
-  board :=
-    Board.add_piece_tile !board ('c', 5)
-      (black_king_id |> Board.piece_by_id !board)
-      25.0;
+  board := Board.add_piece_tile !board ('a', 5) black_king_id 50.0;
+  board := Board.add_piece_tile !board ('b', 5) black_king_id 25.0;
+  board := Board.add_piece_tile !board ('c', 5) black_king_id 25.0;
   !board
 
 let expected2_2 =
@@ -234,40 +156,16 @@ let expected2_2 =
     black_king_id |> Board.piece_by_id !board
     |> Board.remove_piece_tile !board ('a', 5);
 
-  board :=
-    Board.add_piece_tile !board ('a', 7)
-      (black_rook_id |> Board.piece_by_id !board)
-      62.5;
-  board :=
-    Board.add_piece_tile !board ('c', 7)
-      (black_rook_id |> Board.piece_by_id !board)
-      37.5;
+  board := Board.add_piece_tile !board ('a', 7) black_rook_id 62.5;
+  board := Board.add_piece_tile !board ('c', 7) black_rook_id 37.5;
 
-  board :=
-    Board.add_piece_tile !board ('a', 6)
-      (black_bishop_id |> Board.piece_by_id !board)
-      50.0;
-  board :=
-    Board.add_piece_tile !board ('b', 6)
-      (black_bishop_id |> Board.piece_by_id !board)
-      25.0;
-  board :=
-    Board.add_piece_tile !board ('c', 6)
-      (black_bishop_id |> Board.piece_by_id !board)
-      25.0;
+  board := Board.add_piece_tile !board ('a', 6) black_bishop_id 50.0;
+  board := Board.add_piece_tile !board ('b', 6) black_bishop_id 25.0;
+  board := Board.add_piece_tile !board ('c', 6) black_bishop_id 25.0;
 
-  board :=
-    Board.add_piece_tile !board ('a', 5)
-      (black_king_id |> Board.piece_by_id !board)
-      50.0;
-  board :=
-    Board.add_piece_tile !board ('b', 5)
-      (black_king_id |> Board.piece_by_id !board)
-      25.0;
-  board :=
-    Board.add_piece_tile !board ('c', 5)
-      (black_king_id |> Board.piece_by_id !board)
-      25.0;
+  board := Board.add_piece_tile !board ('a', 5) black_king_id 50.0;
+  board := Board.add_piece_tile !board ('b', 5) black_king_id 25.0;
+  board := Board.add_piece_tile !board ('c', 5) black_king_id 25.0;
   !board
 
 let tests =

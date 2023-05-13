@@ -336,7 +336,8 @@ let tile_probability board square =
        (fun acc piece -> acc +. piece_probability board square piece)
        0.0
 
-let add_piece_tile board square piece probability =
+let add_piece_tile board square id probability =
+  let piece = piece_by_id board id in
   match square with
   | file, rank ->
       board.board.(rank).(int_of_file file) <-

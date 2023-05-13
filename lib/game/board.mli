@@ -86,9 +86,9 @@ val tile_probability : t -> coord -> float
 (** [tile_probability board square] is the total probability of all pieces at
     [square] *)
 
-val add_piece_tile : t -> coord -> quantum_piece -> float -> t
-(** [add_piece_tile board square piece probability] is the board where [piece]
-    is added to the tile at [square], and [square] is added to
+val add_piece_tile : t -> coord -> int -> float -> t
+(** [add_piece_tile board square id probability] is the board where [piece] is
+    added to the tile at [square], and [square] is added to
     [piece.superpositions] with [probability]. *)
 
 val remove_piece_tile : t -> coord -> quantum_piece -> t

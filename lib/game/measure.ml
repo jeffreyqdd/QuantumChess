@@ -69,8 +69,7 @@ let rec measure_tile board square bank =
       board := push_off_tile !board square bank;
 
       (* Add piece back to board *)
-      let piece' = { (Board.piece_by_id !board id) with superpositions = [] } in
-      board := Board.add_piece_tile !board square piece' 100.0;
+      board := Board.add_piece_tile !board square id 100.0;
 
       (* Result *)
       !board
@@ -123,8 +122,7 @@ and push_off_piece board square bank id =
                Board.remove_piece_tile !board square'
                  (Board.piece_by_id !board id);
              board :=
-               Board.add_piece_tile !board square'
-                 (Board.piece_by_id !board id)
+               Board.add_piece_tile !board square' id
                  (curr_probability +. probability_chunk);
              bank :=
                IntMap.add id (piece_credits bank id -. probability_chunk) !bank
@@ -133,10 +131,7 @@ and push_off_piece board square bank id =
              board :=
                Board.remove_piece_tile !board square'
                  (Board.piece_by_id !board id);
-             board :=
-               Board.add_piece_tile !board square'
-                 (Board.piece_by_id !board id)
-                 100.0;
+             board := Board.add_piece_tile !board square' id 100.0;
              board := measure_tile !board square' bank;
              bank := IntMap.add id 0.0 !bank
              (* Else if tile becomes super-stable *))
