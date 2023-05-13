@@ -24,7 +24,10 @@ let setup_terminal =
     { x with c_icanon = false; c_vmin = 0; c_vtime = 0 }
   in
   at_exit (fun _ -> tcsetattr stdin TCSAFLUSH regular_mode);
-  tcsetattr stdin TCSAFLUSH consume_mode
+  tcsetattr stdin TCSAFLUSH consume_mode;
+  (*hide cursor
+    https://stackoverflow.com/questions/58738953/how-to-hide-the-cursor-in-the-terminal-using-ocaml*)
+  Printf.printf "\027[?25l%!"
 
 type keyboard_signal =
   | Esc (*go into normal mode*)
@@ -36,7 +39,6 @@ type keyboard_signal =
   | Help (*help signal*)
 
 let process_string mode str =
-  let ( +.. ) a b = (fst a + fst b, snd a + snd b) in
   let rec match_codes code_lst =
     match mode with
     | Insertion -> handle_insertion code_lst
@@ -64,16 +66,16 @@ let process_string mode str =
     | c :: t when c = Ascii.p -> Play
     | c :: t when c = Ascii.i -> Ins
     | c :: t when c = Ascii.h ->
-        cursor_coord := !cursor_coord +.. Coords.left;
+        (cursor_coord := Coords.(!cursor_coord + left));
         match_codes t
     | c :: t when c = Ascii.j ->
-        cursor_coord := !cursor_coord +.. Coords.down;
+        (cursor_coord := Coords.(!cursor_coord + down));
         match_codes t
     | c :: t when c = Ascii.k ->
-        cursor_coord := !cursor_coord +.. Coords.up;
+        (cursor_coord := Coords.(!cursor_coord + Coords.up));
         match_codes t
     | c :: t when c = Ascii.l ->
-        cursor_coord := !cursor_coord +.. Coords.right;
+        (cursor_coord := Coords.(!cursor_coord + right));
         match_codes t
     | c :: t -> match_codes t
     | [] -> Pass
@@ -94,7 +96,7 @@ let user_input_loop func =
     let parse_result = process_string !current_mode user_input in
     func flag parse_result;
     Render.command_bar !current_mode ~text:!text_buffer;
-    Render.goto Coords.command_text;
+    Render.goto Coords.(command_text + (String.length !text_buffer, 0));
     (*take into consideration logic time into calcualting fps*)
     Unix.sleepf (max 0. ((1. /. fps) -. (Unix.time () -. time_now)))
   done
@@ -110,6 +112,7 @@ let handle_intro_page () =
 let board = ref (QFen.board_from_fen QFen.start)
 
 let handle_chess_page () =
+  let last_coord = ref (0, 0) in
   user_input_loop (fun flag parse_result ->
       (match parse_result with
       | Esc -> current_mode := Normal
@@ -118,11 +121,20 @@ let handle_chess_page () =
       | Submit -> text_buffer := ""
       | _ -> ());
 
+      Render.background ();
       Render.draw Coords.board_start []
         (Frontend.string_of_board !board
            (Char.chr (fst !cursor_coord + Ascii.a))
            (snd !cursor_coord) ~render_highlight:(!current_mode = Normal));
-      ())
+      if Coords.(!last_coord <> !cursor_coord) then last_coord := !cursor_coord;
+      (try
+         Render.draw Coords.data_start []
+           (Frontend.tile_info !board
+              (Char.chr (fst !cursor_coord + Ascii.a))
+              (8 - snd !cursor_coord))
+       with Invalid_argument s -> ());
+
+      () (* Render.goto *))
 
 let main =
   (*title*)

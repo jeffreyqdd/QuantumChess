@@ -19,6 +19,15 @@ let list_of_file file_in : string list =
 
 (*Coords are in the format (col, line) where top left is (1,1)*)
 module Coords = struct
+  (**[+ a b] is the element-wise summation of coordinates*)
+  let ( + ) a b = (fst a + fst b, snd a + snd b)
+
+  (**[= a b] evaluates to true if the element-wise = is true for both dimensions*)
+  let ( = ) a b = fst a = fst b && snd a = snd b
+
+  (**[<> a b] evaluates to true if one of the elements does not equal the other*)
+  let ( <> ) a b = a = b |> not
+
   (**[origin] is the top left corner of the board*)
   let origin = (1, 1)
 
@@ -33,6 +42,10 @@ module Coords = struct
 
   (**[board_start] is the top left corner of where the board should be rendered *)
   let board_start = (13, 5)
+
+  (**[data_start] is the top left corner of where the highlighted tile should be
+     rendered *)
+  let data_start = (40, 5)
 
   (*magic values which specify the direction*)
   let left = (-1, 0)
