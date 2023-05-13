@@ -74,8 +74,8 @@ val tile : t -> coord -> tile
 val piece : t -> int -> quantum_piece
 (** [piece board id] is the piece of [id]. Fails if no piece is found. *)
 
-val piece_by_tile : t -> coord -> quantum_piece
-(** [piece_by_tile board square] is the top-most piece at [square]. Fails if no
+val top_piece : t -> coord -> quantum_piece
+(** [top_piece board square] is the top-most piece at [square]. Fails if no
     piece is found. *)
 
 val piece_probability : t -> coord -> quantum_piece -> float

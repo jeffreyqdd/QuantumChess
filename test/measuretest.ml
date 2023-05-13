@@ -48,7 +48,7 @@ let measure_test (name : string) (board : Board.t) (square : coord)
 (* Test 1 *)
 let input1 =
   let board = ref (Board.QFen.board_from_fen "r0/8/8/8/8/8/8/8 - b - -") in
-  let black_rook_id = (Board.piece_by_tile !board ('a', 7)).id in
+  let black_rook_id = (Board.top_piece !board ('a', 7)).id in
 
   board := Board.remove_piece_tile !board ('a', 7) black_rook_id;
   board := Board.add_piece_tile !board ('a', 7) black_rook_id 20.0;
@@ -60,7 +60,7 @@ let input1 =
 
 let expected1_1 =
   let board = ref (Board.QFen.board_from_fen "r0/8/8/8/8/8/8/8 - b - -") in
-  let black_rook_id = (Board.piece_by_tile !board ('a', 7)).id in
+  let black_rook_id = (Board.top_piece !board ('a', 7)).id in
 
   board := Board.remove_piece_tile !board ('a', 7) black_rook_id;
   board := Board.add_piece_tile !board ('a', 7) black_rook_id 100.0;
@@ -68,7 +68,7 @@ let expected1_1 =
 
 let expected1_2 =
   let board = ref (Board.QFen.board_from_fen "r0/8/8/8/8/8/8/8 - b - -") in
-  let black_rook_id = (Board.piece_by_tile !board ('a', 7)).id in
+  let black_rook_id = (Board.top_piece !board ('a', 7)).id in
 
   board := Board.remove_piece_tile !board ('a', 7) black_rook_id;
   board := Board.add_piece_tile !board ('b', 7) black_rook_id 25.0;
@@ -80,9 +80,9 @@ let expected1_2 =
 (* Test 2 *)
 let input2 =
   let board = ref (Board.QFen.board_from_fen "r0/b1/k2/8/8/8/8/8 - b - -") in
-  let black_rook_id = (Board.piece_by_tile !board ('a', 7)).id in
-  let black_bishop_id = (Board.piece_by_tile !board ('a', 6)).id in
-  let black_king_id = (Board.piece_by_tile !board ('a', 5)).id in
+  let black_rook_id = (Board.top_piece !board ('a', 7)).id in
+  let black_bishop_id = (Board.top_piece !board ('a', 6)).id in
+  let black_king_id = (Board.top_piece !board ('a', 5)).id in
 
   board := Board.remove_piece_tile !board ('a', 7) black_rook_id;
   board := Board.remove_piece_tile !board ('a', 6) black_bishop_id;
@@ -103,9 +103,9 @@ let input2 =
 
 let expected2_1 =
   let board = ref (Board.QFen.board_from_fen "r0/b1/k2/8/8/8/8/8 - b - -") in
-  let black_rook_id = (Board.piece_by_tile !board ('a', 7)).id in
-  let black_bishop_id = (Board.piece_by_tile !board ('a', 6)).id in
-  let black_king_id = (Board.piece_by_tile !board ('a', 5)).id in
+  let black_rook_id = (Board.top_piece !board ('a', 7)).id in
+  let black_bishop_id = (Board.top_piece !board ('a', 6)).id in
+  let black_king_id = (Board.top_piece !board ('a', 5)).id in
 
   board := Board.remove_piece_tile !board ('a', 7) black_rook_id;
   board := Board.remove_piece_tile !board ('a', 6) black_bishop_id;
@@ -124,9 +124,9 @@ let expected2_1 =
 
 let expected2_2 =
   let board = ref (Board.QFen.board_from_fen "r0/b1/k2/8/8/8/8/8 - b - -") in
-  let black_rook_id = (Board.piece_by_tile !board ('a', 7)).id in
-  let black_bishop_id = (Board.piece_by_tile !board ('a', 6)).id in
-  let black_king_id = (Board.piece_by_tile !board ('a', 5)).id in
+  let black_rook_id = (Board.top_piece !board ('a', 7)).id in
+  let black_bishop_id = (Board.top_piece !board ('a', 6)).id in
+  let black_king_id = (Board.top_piece !board ('a', 5)).id in
 
   board := Board.remove_piece_tile !board ('a', 7) black_rook_id;
   board := Board.remove_piece_tile !board ('a', 6) black_bishop_id;

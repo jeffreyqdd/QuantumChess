@@ -321,7 +321,7 @@ let tile board square =
 
 let piece board id = IntMap.find id board.pieces
 
-let piece_by_tile board square =
+let top_piece board square =
   match tile board square with
   | h :: t -> h
   | _ -> failwith "error"
