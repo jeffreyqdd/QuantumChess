@@ -304,8 +304,8 @@ and reallocate_piece board square bank piece =
 
   (* Add probability to bank account and remove [piece] from [square] *)
   bank := IntMap.add piece.id (probability +. curr_credits) !bank;
-  board := Board.remove_piece_tile !board square piece;
-
+  board :=
+    Board.remove_piece_tile !board square (piece.id |> Board.piece_by_id !board);
   (* Attempt to evenly spread out the probabilities in the bank account *)
   while IntMap.find piece.id !bank > 0.0 do
     let curr_balance = get_curr_credits bank piece.id in
@@ -320,9 +320,12 @@ and reallocate_piece board square bank piece =
            (* If tile stability doesn't exceed 100% *)
            if Board.tile_probability !board square +. probability_chunk < 100.0
            then (
-             board := Board.remove_piece_tile !board square' piece;
              board :=
-               Board.add_piece_tile !board square' piece
+               Board.remove_piece_tile !board square'
+                 (piece.id |> Board.piece_by_id !board);
+             board :=
+               Board.add_piece_tile !board square'
+                 (piece.id |> Board.piece_by_id !board)
                  (curr_probability +. probability_chunk);
              bank :=
                IntMap.add piece.id
@@ -330,8 +333,13 @@ and reallocate_piece board square bank piece =
                  !bank
              (* Else if one piece has probability = 100% on tile *))
            else if curr_probability +. probability_chunk = 100.0 then (
-             board := Board.remove_piece_tile !board square' piece;
-             board := Board.add_piece_tile !board square' piece 100.0;
+             board :=
+               Board.remove_piece_tile !board square'
+                 (piece.id |> Board.piece_by_id !board);
+             board :=
+               Board.add_piece_tile !board square'
+                 (piece.id |> Board.piece_by_id !board)
+                 100.0;
              board := measurement !board square' bank;
              bank := IntMap.add piece.id 0.0 !bank
              (* Else if tile becomes super-stable *))
