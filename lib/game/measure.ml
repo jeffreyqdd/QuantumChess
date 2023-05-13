@@ -98,7 +98,7 @@ and push_off_piece board square bank id =
 
   (* Add probability to bank account and remove [piece] from [square] *)
   bank := IntMap.add id (probability +. piece_credits bank id) !bank;
-  board := Board.remove_piece_tile !board square (Board.piece_by_id !board id);
+  board := Board.remove_piece_tile !board square id;
 
   (* Attempt to evenly spread out the probabilities in the bank account *)
   while IntMap.find id !bank > 0.0 do
@@ -118,9 +118,7 @@ and push_off_piece board square bank id =
            (* If tile stability doesn't exceed 100% *)
            if Board.tile_probability !board square +. probability_chunk < 100.0
            then (
-             board :=
-               Board.remove_piece_tile !board square'
-                 (Board.piece_by_id !board id);
+             board := Board.remove_piece_tile !board square' id;
              board :=
                Board.add_piece_tile !board square' id
                  (curr_probability +. probability_chunk);
@@ -128,9 +126,7 @@ and push_off_piece board square bank id =
                IntMap.add id (piece_credits bank id -. probability_chunk) !bank
              (* Else if one piece has probability = 100% on tile *))
            else if curr_probability +. probability_chunk = 100.0 then (
-             board :=
-               Board.remove_piece_tile !board square'
-                 (Board.piece_by_id !board id);
+             board := Board.remove_piece_tile !board square' id;
              board := Board.add_piece_tile !board square' id 100.0;
              board := measure_tile !board square' bank;
              bank := IntMap.add id 0.0 !bank

@@ -348,7 +348,8 @@ let add_piece_tile board square id probability =
       in
       set_piece board piece piece'
 
-let remove_piece_tile board square piece =
+let remove_piece_tile board square id =
+  let piece = piece_by_id board id in
   match square with
   | file, rank ->
       board.board.(rank).(int_of_file file) <-
@@ -364,6 +365,5 @@ let delete_piece board piece =
   piece.superpositions
   |> List.fold_left
        (fun board_acc pos ->
-         remove_piece_tile board_acc (pos.file, pos.rank)
-           (piece.id |> piece_by_id board_acc))
+         remove_piece_tile board_acc (pos.file, pos.rank) piece.id)
        board
