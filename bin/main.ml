@@ -5,42 +5,67 @@ open State
 module IntMap = Map.Make (Int)
 
 let _ =
-  let board = ref (QFen.board_from_fen "r0/b1/8/8/8/8/8/8 - b - -") in
+  let board = ref (QFen.board_from_fen "r0/b1/k2/8/8/8/8/8 - b - -") in
   let black_rook_id = (Board.piece_by_tile !board ('a', 7)).id in
   let black_bishop_id = (Board.piece_by_tile !board ('a', 6)).id in
-  let print_rook () =
-    black_rook_id |> Board.piece_by_id !board |> string_of_piece
-    |> print_endline
+  let black_king_id = (Board.piece_by_tile !board ('a', 5)).id in
+  let print_piece id =
+    id |> Board.piece_by_id !board |> string_of_piece |> print_endline
   in
 
   (* TEST *)
-  print_rook ();
   board :=
     black_rook_id |> Board.piece_by_id !board
     |> Board.remove_piece_tile !board ('a', 7);
-  print_rook ();
+  board :=
+    black_bishop_id |> Board.piece_by_id !board
+    |> Board.remove_piece_tile !board ('a', 6);
+  board :=
+    black_king_id |> Board.piece_by_id !board
+    |> Board.remove_piece_tile !board ('a', 5);
 
   board :=
     Board.add_piece_tile !board ('a', 7)
       (black_rook_id |> Board.piece_by_id !board)
-      20.0;
+      50.0;
   board :=
     Board.add_piece_tile !board ('b', 7)
       (black_rook_id |> Board.piece_by_id !board)
-      20.0;
+      25.0;
   board :=
     Board.add_piece_tile !board ('c', 7)
       (black_rook_id |> Board.piece_by_id !board)
-      20.0;
+      25.0;
+
   board :=
-    Board.add_piece_tile !board ('d', 7)
-      (black_rook_id |> Board.piece_by_id !board)
-      20.0;
+    Board.add_piece_tile !board ('a', 6)
+      (black_bishop_id |> Board.piece_by_id !board)
+      50.0;
   board :=
-    Board.add_piece_tile !board ('e', 7)
-      (black_rook_id |> Board.piece_by_id !board)
-      20.0;
-  print_rook ();
+    Board.add_piece_tile !board ('b', 6)
+      (black_bishop_id |> Board.piece_by_id !board)
+      25.0;
+  board :=
+    Board.add_piece_tile !board ('c', 6)
+      (black_bishop_id |> Board.piece_by_id !board)
+      25.0;
+
+  board :=
+    Board.add_piece_tile !board ('a', 5)
+      (black_king_id |> Board.piece_by_id !board)
+      50.0;
+  board :=
+    Board.add_piece_tile !board ('b', 5)
+      (black_king_id |> Board.piece_by_id !board)
+      25.0;
+  board :=
+    Board.add_piece_tile !board ('c', 5)
+      (black_king_id |> Board.piece_by_id !board)
+      25.0;
+
+  print_piece black_rook_id;
+  print_piece black_bishop_id;
+  print_piece black_king_id;
   (* board := Board.delete_piece !board (black_rook_id |> Board.piece_by_id
      !board); *)
   (* board := Board.remove_piece_tile !board ('a', 7) (black_rook_id |>
@@ -48,9 +73,11 @@ let _ =
      (black_rook_id |> Board.piece_by_id !board); *)
   draw !board 'a' 0;
   print_endline " ";
-  board := Measure.measurement !board ('a', 7);
+  board := Measure.measurement !board ('b', 7);
   draw !board 'a' 0;
-  print_rook ();
+  print_piece black_rook_id;
+  print_piece black_bishop_id;
+  print_piece black_king_id;
   (* board := Board.add_piece_tile !board ('a', 7) black_rook 20.0; board :=
      Board.add_piece_tile !board ('b', 7) black_rook 20.0; board :=
      Board.add_piece_tile !board ('c', 7) black_rook 20.0; board :=
