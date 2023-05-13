@@ -315,6 +315,13 @@ let tile board square =
         []
         board.board.(rank).(int_of_file file)
 
+let piece_by_id board id = IntMap.find id board.pieces
+
+let piece_by_tile board square =
+  match tile board square with
+  | h :: t -> h
+  | _ -> failwith "error"
+
 let piece_probability board square piece =
   (piece.superpositions |> List.find (fun pos -> (pos.file, pos.rank) = square))
     .probability
@@ -348,7 +355,7 @@ let remove_piece_tile board square piece =
       let piece' = { piece with superpositions = positions } in
       set_piece board piece piece'
 
-let delete_piece board square piece =
+let delete_piece board piece =
   piece.superpositions
   |> List.fold_left
        (fun board_acc pos ->

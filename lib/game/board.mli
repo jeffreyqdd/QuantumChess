@@ -68,6 +68,13 @@ val player_turn : t -> color
 val tile : t -> coord -> tile
 (** [tile board square] is the tile at [square].*)
 
+val piece_by_id : t -> int -> quantum_piece
+(** [piece_by_id board square] is the piece of [id]. Fails if no piece is found. *)
+
+val piece_by_tile : t -> coord -> quantum_piece
+(** [piece_by_tile board square] is the top-most piece at [square]. Fails if no
+    piece is found. *)
+
 val piece_probability : t -> coord -> quantum_piece -> float
 (** [piece_probability board square piece] is the probability that [piece] is at
     [square]. *)
@@ -86,6 +93,6 @@ val remove_piece_tile : t -> coord -> quantum_piece -> t
     from the tile at [square], and [square] is removed from
     [piece.superpositions]. *)
 
-val delete_piece : t -> coord -> quantum_piece -> t
-(** [delete_piece board square piece] is the board where [piece] is removed from
-    all tiles. *)
+val delete_piece : t -> quantum_piece -> t
+(** [delete_piece board piece] is the board where [piece] is removed from all
+    tiles. *)
