@@ -63,7 +63,7 @@ let rec measure_tile board square bank =
   match measure_piece !board square with
   | Some id ->
       (* Delete piece from board *)
-      board := Board.delete_piece !board (Board.piece_by_id !board id);
+      board := Board.delete_piece !board (Board.piece !board id);
 
       (* Push all other pieces off tile *)
       board := push_off_tile !board square bank;
@@ -93,7 +93,7 @@ and push_off_tile board square bank =
 and push_off_piece board square bank id =
   let board = ref board in
   let probability =
-    Board.piece_probability !board square (Board.piece_by_id !board id)
+    Board.piece_probability !board square (Board.piece !board id)
   in
 
   (* Add probability to bank account and remove [piece] from [square] *)
@@ -102,18 +102,15 @@ and push_off_piece board square bank id =
 
   (* Attempt to evenly spread out the probabilities in the bank account *)
   while IntMap.find id !bank > 0.0 do
-    let num_positions =
-      List.length (Board.piece_by_id !board id).superpositions
-    in
+    let num_positions = List.length (Board.piece !board id).superpositions in
     let probability_chunk =
       piece_credits bank id /. float_of_int num_positions
     in
-    (Board.piece_by_id !board id).superpositions
+    (Board.piece !board id).superpositions
     |> List.iter (fun pos ->
            let square' = (pos.file, pos.rank) in
            let curr_probability =
-             Board.piece_probability !board square'
-               (Board.piece_by_id !board id)
+             Board.piece_probability !board square' (Board.piece !board id)
            in
            (* If tile stability doesn't exceed 100% *)
            if Board.tile_probability !board square +. probability_chunk < 100.0

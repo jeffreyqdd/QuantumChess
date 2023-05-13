@@ -319,7 +319,7 @@ let tile board square =
         []
         board.board.(rank).(int_of_file file)
 
-let piece_by_id board id = IntMap.find id board.pieces
+let piece board id = IntMap.find id board.pieces
 
 let piece_by_tile board square =
   match tile board square with
@@ -337,7 +337,7 @@ let tile_probability board square =
        0.0
 
 let add_piece_tile board square id probability =
-  let piece = piece_by_id board id in
+  let piece = piece board id in
   match square with
   | file, rank ->
       board.board.(rank).(int_of_file file) <-
@@ -349,7 +349,7 @@ let add_piece_tile board square id probability =
       set_piece board piece piece'
 
 let remove_piece_tile board square id =
-  let piece = piece_by_id board id in
+  let piece = piece board id in
   match square with
   | file, rank ->
       board.board.(rank).(int_of_file file) <-

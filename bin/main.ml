@@ -10,7 +10,7 @@ let _ =
   let black_bishop_id = (Board.piece_by_tile !board ('a', 6)).id in
   let black_king_id = (Board.piece_by_tile !board ('a', 5)).id in
   let print_piece id =
-    id |> Board.piece_by_id !board |> string_of_piece |> print_endline
+    id |> Board.piece !board |> string_of_piece |> print_endline
   in
 
   (* TEST *)
@@ -33,11 +33,11 @@ let _ =
   print_piece black_rook_id;
   print_piece black_bishop_id;
   print_piece black_king_id;
-  (* board := Board.delete_piece !board (black_rook_id |> Board.piece_by_id
+  (* board := Board.delete_piece !board (black_rook_id |> Board.piece
      !board); *)
   (* board := Board.remove_piece_tile !board ('a', 7) (black_rook_id |>
-     Board.piece_by_id !board); board := Board.remove_piece_tile !board ('b', 7)
-     (black_rook_id |> Board.piece_by_id !board); *)
+     Board.piece !board); board := Board.remove_piece_tile !board ('b', 7)
+     (black_rook_id |> Board.piece !board); *)
   draw !board 'a' 0;
   print_endline " ";
   board := Measure.measurement !board ('b', 7);
