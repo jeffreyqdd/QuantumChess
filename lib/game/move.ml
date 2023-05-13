@@ -225,23 +225,34 @@ let castle_attempt (phrase : Command.move_phrase) : bool = failwith "lol"
 
 (** [full_probability_piece board square] is [Some] piece on [square] with 100%
     probability, or [None] if none exists *)
-(* let full_probability_piece board square : quantum_piece option = match square
-   with | file, rank -> ( match Board.tile board file rank |> List.filter (fun
-   piece -> Board.piece_probability board square piece = 100.0) with | [] ->
-   None | [ h ] -> Some h | _ -> failwith "There's more than one piece with full
-   probability") *)
+let full_probability_piece board square : quantum_piece option =
+  match square with
+  | file, rank -> (
+      match
+        Board.tile board file rank
+        |> List.filter (fun piece ->
+               Board.piece_probability board square piece = 100.0)
+      with
+      | [] -> None
+      | [ h ] -> Some h
+      | _ -> failwith "There's more than one piece with full\n   probability")
 
 (** [measure_piece board square] is the piece measured to be on [square] *)
-(* let measure_piece board square = match square with | file, rank -> ( match
-   full_probability_piece board square with | Some piece -> piece | None -> let
-   events = Board.tile board file rank |> List.map (fun piece -> (piece,
-   piece_square_probability board square piece)) in measure events) *)
+let measure_piece board square =
+  match square with
+  | file, rank -> (
+      match full_probability_piece board square with
+      | Some piece -> piece
+      | None ->
+          let events =
+            Board.tile board file rank
+            |> List.map (fun piece ->
+                   (piece, Board.piece_probability board square piece))
+          in
+          measure events)
 
-(** [piece_without_superpositions] is the piece where all superpositions are
-    removed except for [square] which now has 100% probability *)
-(* let piece_without_superpositions board square piece = match square with |
-   file, rank -> let position = { file; rank; probability = 100.0 } in { piece
-   with superpositions = [ position ] } *)
+(** [remove_superpositions] is the piece where all superpositions are removed *)
+let remove_superpositions piece = { piece with superpositions = [] }
 
 (** [board_pushoff_tile board square] is the board where every piece on [square]
     is pushed off and its probabilities reallocated to other tiles *)
@@ -288,13 +299,16 @@ let castle_attempt (phrase : Command.move_phrase) : bool = failwith "lol"
     - Third, the attempt is blocked if the tile becomes super-stable without any
       specific piece to have a probability equal to 100%. In this case, we
       measure the tile immediately and end this iteration of the while loop. *)
-(* let measurement (board : Board.t) (square : coord) : Board.t = match square
-   with | file, rank -> (* Find the piece that actually exists on [square] *)
-   let piece = measure_piece board square in
+let measurement (board : Board.t) (square : coord) : Board.t =
+  match square with
+  | file, rank ->
+      (* Find the piece that actually exists on [square] *)
+      let piece = measure_piece board square in
 
-   (* Delete all other probabilities *) let board' = board_without_piece board
-   square piece in let piece' = piece_without_superpositions board square piece
-   in board_add_piece_tile board' square piece' *)
+      (* Delete all other probabilities *)
+      let board' = Board.delete_piece board square piece in
+      let piece' = remove_superpositions piece in
+      Board.add_piece_tile board' square piece' 100.0
 
 (* ================================================================= *)
 (* ========== Public Functions that belong to module Move ========== *)
