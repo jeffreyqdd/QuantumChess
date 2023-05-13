@@ -23,7 +23,7 @@ let _ =
   board :=
     Board.add_piece_tile !board ('a', 7)
       (black_rook_id |> Board.piece_by_id !board)
-      100.0;
+      20.0;
   board :=
     Board.add_piece_tile !board ('b', 7)
       (black_rook_id |> Board.piece_by_id !board)

@@ -2,6 +2,8 @@ open State
 open Random
 module IntMap = Map.Make (Int)
 
+let _ = Random.self_init ()
+
 (* ============================================== *)
 (* ========== Private Helper Functions ========== *)
 (* ============================================== *)
