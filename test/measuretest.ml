@@ -52,7 +52,7 @@ let measure_test (name : string) (board : Board.t) (square : coord)
         || Board.is_equal (Measure.measurement board square) possible_result)
       false expected
   in
-  assert_equal result true
+  assert_equal result true ~printer:string_of_bool
 
 (* Test 1 *)
 let input1 =
