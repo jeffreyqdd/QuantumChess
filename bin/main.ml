@@ -42,9 +42,13 @@ let _ =
       (black_rook_id |> Board.piece_by_id !board)
       20.0;
   print_rook ();
+  board := Board.delete_piece !board (black_rook_id |> Board.piece_by_id !board);
+  (* board := Board.remove_piece_tile !board ('a', 7) (black_rook_id |>
+     Board.piece_by_id !board); board := Board.remove_piece_tile !board ('b', 7)
+     (black_rook_id |> Board.piece_by_id !board); *)
   draw !board 'a' 0;
   print_endline " ";
-  board := Move.measurement !board ('a', 7) bank;
+  (* board := Move.measurement !board ('a', 7) bank; *)
   draw !board 'a' 0;
   print_rook ();
   (* board := Board.add_piece_tile !board ('a', 7) black_rook 20.0; board :=

@@ -356,8 +356,10 @@ let remove_piece_tile board square piece =
       set_piece board piece piece'
 
 let delete_piece board piece =
+  let id = ref piece.id in
   piece.superpositions
   |> List.fold_left
        (fun board_acc pos ->
+         let piece = piece_by_id board_acc !id in
          remove_piece_tile board_acc (pos.file, pos.rank) piece)
        board

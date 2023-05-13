@@ -69,7 +69,7 @@ val tile : t -> coord -> tile
 (** [tile board square] is the tile at [square].*)
 
 val piece_by_id : t -> int -> quantum_piece
-(** [piece_by_id board square] is the piece of [id]. Fails if no piece is found. *)
+(** [piece_by_id board id] is the piece of [id]. Fails if no piece is found. *)
 
 val piece_by_tile : t -> coord -> quantum_piece
 (** [piece_by_tile board square] is the top-most piece at [square]. Fails if no
