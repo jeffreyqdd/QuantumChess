@@ -65,9 +65,8 @@ val init : t
 val player_turn : t -> color
 (** [player_turn board] is the player turn of the current board [t] *)
 
-val tile : t -> char -> int -> tile
-(** [tile board file rank] is the tile represented by [file] and [rank]. [file]
-    is in range 0..7 and [rank] is in rank a..h *)
+val tile : t -> coord -> tile
+(** [tile board square] is the tile at [square].*)
 
 val piece_probability : t -> coord -> quantum_piece -> float
 (** [piece_probability board square piece] is the probability that [piece] is at
@@ -83,10 +82,10 @@ val set_piece : t -> quantum_piece -> quantum_piece -> t
 
 val add_piece_tile : t -> coord -> quantum_piece -> float -> t
 (** [add_piece_tile board square piece probability] is the board where [piece]
-    is added to the tile represented by [square], and [square] is added to
+    is added to the tile at [square], and [square] is added to
     [piece.superpositions]. *)
 
 val remove_piece_tile : t -> coord -> quantum_piece -> t
 (** [remove_piece_tile board square piece] is the board where [piece] is removed
-    from the tile represented by [square], and [square] is removed from
+    from the tile at [square], and [square] is removed from
     [piece.superpositions]. *)

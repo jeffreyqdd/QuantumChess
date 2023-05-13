@@ -302,13 +302,13 @@ end
 let init = QFen.board_from_fen QFen.start
 let player_turn board = board.turn
 
-let tile board file rank =
-  List.fold_left
-    (fun acc piece -> IntMap.find piece board.pieces :: acc)
-    []
-    board.board.(rank).(int_of_file file)
-
-let set_tile board square tile = raise (Failure "Unimplemented: Board.set_tile")
+let tile board square =
+  match square with
+  | file, rank ->
+      List.fold_left
+        (fun acc piece -> IntMap.find piece board.pieces :: acc)
+        []
+        board.board.(rank).(int_of_file file)
 
 let piece_probability board square piece =
   match square with
@@ -317,22 +317,15 @@ let piece_probability board square piece =
       |> List.find (fun pos -> pos.file = file && pos.rank = rank))
         .probability
 
-let add_piece_tile board square piece probability =
-  match square with
-  | file, rank -> piece :: tile board file rank |> set_tile board (file, rank)
-
-let remove_piece_tile board square piece =
-  match square with
-  | file, rank ->
-      tile board file rank
-      |> List.filter (fun piece' -> piece'.id <> piece.id)
-      |> set_tile board (file, rank)
+let delete_piece board square piece = failwith "H"
+(* piece.superpositions |> List.fold_left (fun board_acc pos ->
+   remove_piece_tile board_acc (pos.file, pos.rank) piece) board *)
 
 let set_piece board piece piece' = failwith "Unimplemented: Board.set_piece"
+let add_piece_tile board square piece probability = failwith "H"
+(* match square with | file, rank -> piece :: tile board file rank |> set_tile
+   board (file, rank) *)
 
-let delete_piece board square piece =
-  piece.superpositions
-  |> List.fold_left
-       (fun board_acc pos ->
-         remove_piece_tile board_acc (pos.file, pos.rank) piece)
-       board
+let remove_piece_tile board square piece = failwith "H"
+(* match square with | file, rank -> tile board file rank |> List.filter (fun
+   piece' -> piece'.id <> piece.id) |> set_tile board (file, rank) *)

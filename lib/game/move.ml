@@ -165,7 +165,7 @@ let probability (piece_locale : position list) (file : char) (rank : int) :
 let coord_checker (board : Board.t) (square : coord) : occupancy =
   match square with
   | file, rank -> (
-      let pieces = Board.tile board file rank in
+      let pieces = Board.tile board (file, rank) in
       let max_percentage_list =
         List.fold_left
           (fun acc qpiece -> probability qpiece.superpositions file rank)
@@ -176,40 +176,21 @@ let coord_checker (board : Board.t) (square : coord) : occupancy =
       | 100.0 -> Stable
       | _ -> Unstable)
 
-let rec measure_piece_old (board : Board.t) (piece : quantum_piece) : Board.t =
-  let events =
-    List.map (fun x -> ((x.file, x.rank), x.probability)) piece.superpositions
-  in
-  let true_coord = measure events in
-  (* Remove [piece] from all tiles in board *)
-  let tile' board file rank =
-    Board.tile board file rank |> List.filter (fun x -> x.id <> piece.id)
-  in
-  let board' =
-    List.fold_left
-      (fun acc position ->
-        tile' acc position.file position.rank
-        |> Board.set_tile acc (position.file, position.rank))
-      board piece.superpositions
-  in
-  (* Add [piece] back to the tile of [true_coord] *)
-  let piece' : quantum_piece =
-    match true_coord with
-    | f, r ->
-        {
-          piece with
-          superpositions = [ { file = f; rank = r; probability = 100.0 } ];
-        }
-  in
-  let tile'' board file rank = Board.tile board file rank @ [ piece' ] in
-  let board'' =
-    match true_coord with
-    | f, r -> Board.set_tile board' (f, r) (tile'' board' f r)
-  in
-  (* Remove other pieces that are also occupying [true_coord] *)
-  (* Make it so that other pieces have probabilities divided amongst all
-     remaining superpositions. Recursively measure those that got kicked off *)
-  board''
+(* let rec measure_piece_old (board : Board.t) (piece : quantum_piece) : Board.t
+   = let events = List.map (fun x -> ((x.file, x.rank), x.probability))
+   piece.superpositions in let true_coord = measure events in (* Remove [piece]
+   from all tiles in board *) let tile' board file rank = Board.tile board
+   (file, rank) |> List.filter (fun x -> x.id <> piece.id) in let board' =
+   List.fold_left (fun acc position -> tile' acc position.file position.rank |>
+   Board.set_tile acc (position.file, position.rank)) board piece.superpositions
+   in (* Add [piece] back to the tile of [true_coord] *) let piece' :
+   quantum_piece = match true_coord with | f, r -> { piece with superpositions =
+   [ { file = f; rank = r; probability = 100.0 } ]; } in let tile'' board file
+   rank = Board.tile board (file, rank) @ [ piece' ] in let board'' = match
+   true_coord with | f, r -> Board.set_tile board' (f, r) (tile'' board' f r) in
+   (* Remove other pieces that are also occupying [true_coord] *) (* Make it so
+   that other pieces have probabilities divided amongst all remaining
+   superpositions. Recursively measure those that got kicked off *) board'' *)
 
 (** [capture_attempt phrase] is whether the player's move phrase is an attempt
     to capture an enemy piece *)
@@ -229,7 +210,7 @@ let full_probability_piece board square : quantum_piece option =
   match square with
   | file, rank -> (
       match
-        Board.tile board file rank
+        Board.tile board (file, rank)
         |> List.filter (fun piece ->
                Board.piece_probability board square piece = 100.0)
       with
@@ -245,7 +226,7 @@ let measure_piece board square =
       | Some piece -> piece
       | None ->
           let events =
-            Board.tile board file rank
+            Board.tile board (file, rank)
             |> List.map (fun piece ->
                    (piece, Board.piece_probability board square piece))
           in
