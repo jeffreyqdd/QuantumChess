@@ -93,24 +93,38 @@ let expected1 =
   board :=
     Board.add_piece_tile !board ('a', 7)
       (black_rook_id |> Board.piece_by_id !board)
-      20.0;
+      100.0;
+  !board
+
+let expected2 =
+  let board = ref (Board.QFen.board_from_fen "r0/8/8/8/8/8/8/8 - b - -") in
+  let black_rook_id = (Board.piece_by_tile !board ('a', 7)).id in
+
+  board :=
+    black_rook_id |> Board.piece_by_id !board
+    |> Board.remove_piece_tile !board ('a', 7);
   board :=
     Board.add_piece_tile !board ('b', 7)
       (black_rook_id |> Board.piece_by_id !board)
-      20.0;
+      25.0;
   board :=
     Board.add_piece_tile !board ('c', 7)
       (black_rook_id |> Board.piece_by_id !board)
-      20.0;
+      25.0;
   board :=
     Board.add_piece_tile !board ('d', 7)
       (black_rook_id |> Board.piece_by_id !board)
-      20.0;
+      25.0;
   board :=
     Board.add_piece_tile !board ('e', 7)
       (black_rook_id |> Board.piece_by_id !board)
-      20.0;
+      25.0;
   !board
 
 let tests =
-  [ measure_test "Black rook and black bishop" input1 ('a', 6) [ input1 ] ]
+  [
+    measure_test
+      "Black rook on a7/b7/c7/d7/e7 is measured to either be on a7 only with \
+       100% probability or b7/c7/d7/e7 with 25% probability each"
+      input1 ('a', 7) [ expected1; expected2 ];
+  ]
