@@ -27,7 +27,7 @@ let place_piece board piece_type id file rank =
         {
           id;
           piece_type;
-          superpositions = [ { file; rank; probability = 1. } ];
+          superpositions = [ { file; rank; probability = 100.0 } ];
           capture_attempt = false;
         }
       in
@@ -296,6 +296,14 @@ module QFen = struct
     p1 ^ " " ^ p2 ^ " " ^ p3 ^ " " ^ p4 ^ " " ^ p5
 end
 
+(** [set_piece board piece piece'] is the board where [piece] is replaced with
+    [piece']. *)
+let set_piece board piece piece' =
+  {
+    board with
+    pieces = IntMap.update piece.id (fun _ -> Some piece') board.pieces;
+  }
+
 (* ================================================================== *)
 (* ========== Public Functions that belong to module Board ========== *)
 (* ================================================================== *)
@@ -311,21 +319,35 @@ let tile board square =
         board.board.(rank).(int_of_file file)
 
 let piece_probability board square piece =
+  (piece.superpositions |> List.find (fun pos -> (pos.file, pos.rank) = square))
+    .probability
+
+let add_piece_tile board square piece probability =
   match square with
   | file, rank ->
-      (piece.superpositions
-      |> List.find (fun pos -> pos.file = file && pos.rank = rank))
-        .probability
+      board.board.(rank).(int_of_file file) <-
+        piece.id :: pieces_at board file rank;
+      let position = { file; rank; probability } in
+      let piece' =
+        { piece with superpositions = position :: piece.superpositions }
+      in
+      set_piece board piece piece'
 
-let delete_piece board square piece = failwith "H"
-(* piece.superpositions |> List.fold_left (fun board_acc pos ->
-   remove_piece_tile board_acc (pos.file, pos.rank) piece) board *)
+let remove_piece_tile board square piece =
+  match square with
+  | file, rank ->
+      board.board.(rank).(int_of_file file) <-
+        pieces_at board file rank |> List.filter (fun id -> id <> piece.id);
+      let positions =
+        piece.superpositions
+        |> List.filter (fun pos -> (pos.file, pos.rank) <> square)
+      in
+      let piece' = { piece with superpositions = positions } in
+      set_piece board piece piece'
 
-let set_piece board piece piece' = failwith "Unimplemented: Board.set_piece"
-let add_piece_tile board square piece probability = failwith "H"
-(* match square with | file, rank -> piece :: tile board file rank |> set_tile
-   board (file, rank) *)
-
-let remove_piece_tile board square piece = failwith "H"
-(* match square with | file, rank -> tile board file rank |> List.filter (fun
-   piece' -> piece'.id <> piece.id) |> set_tile board (file, rank) *)
+let delete_piece board square piece =
+  piece.superpositions
+  |> List.fold_left
+       (fun board_acc pos ->
+         remove_piece_tile board_acc (pos.file, pos.rank) piece)
+       board
