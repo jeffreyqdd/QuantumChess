@@ -304,6 +304,10 @@ let set_piece board piece piece' =
 (* ================================================================== *)
 (* ========== Public Functions that belong to module Board ========== *)
 (* ================================================================== *)
+
+let is_equal board1 board2 =
+  QFen.fen_from_board board1 = QFen.fen_from_board board2
+
 let init = QFen.board_from_fen QFen.start
 let player_turn board = board.turn
 

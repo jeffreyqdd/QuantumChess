@@ -59,6 +59,9 @@ module QFen : sig
   (** [fen_from_board b] serializes [b] into a QFen. *)
 end
 
+val is_equal : t -> t -> bool
+(** [is_equal board1 board2] is true if [board1 = board2] and false otherwise. *)
+
 val init : t
 (** [init] evaluates to the board state denoted in the fen [start] *)
 
