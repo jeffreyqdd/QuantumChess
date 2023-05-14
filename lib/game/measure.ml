@@ -262,5 +262,5 @@ let rec measurement board square =
   match rep_ok board new_board with
   | true -> new_board
   | false ->
-      print_endline "rep_ok violated";
+      (* print_endline "rep_ok violated"; *)
       measurement board square
