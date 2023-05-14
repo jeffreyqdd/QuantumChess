@@ -31,7 +31,7 @@ type quantum_piece = {
   id : int;
   piece_type : piece_type;
   superpositions : position list;
-  capture_attempt : bool;
+  has_moved : bool;
 }
 (** The type representing a quantum piece on the board *)
 
