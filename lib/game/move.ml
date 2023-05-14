@@ -156,8 +156,44 @@ let is_legal_move (board : Board.t) (piece : quantum_piece) (start : coord)
       | King -> (
           match move_type with
           | Jump -> false
-          | E -> f' = f + 1 || ((not piece.has_moved) && f' = f + 2)
-          | W -> f' = f - 1 || ((not piece.has_moved) && f' = f - 2)))
+          | E ->
+              let (faulty_piece : quantum_piece) =
+                {
+                  id = 1;
+                  piece_type = { name = Pawn; color = Black };
+                  superpositions = [];
+                  has_moved = false;
+                }
+              in
+              let target_rook =
+                try Board.top_piece board (file_of_int (f + 3), y)
+                with _ -> faulty_piece
+              in
+              f' = f + 1
+              || (not target_rook.has_moved)
+                 && target_rook.piece_type.name = Rook
+                 && (not piece.has_moved)
+                 && f' = f + 2
+          | W ->
+              let (faulty_piece : quantum_piece) =
+                {
+                  id = 1;
+                  piece_type = { name = Pawn; color = Black };
+                  superpositions = [];
+                  has_moved = false;
+                }
+              in
+              let target_rook =
+                try Board.top_piece board (file_of_int (f - 4), y)
+                with _ -> faulty_piece
+              in
+              f' = f - 1
+              || (not target_rook.has_moved)
+                 && target_rook.piece_type.name = Rook
+                 && (not piece.has_moved)
+                 && f' = f - 2
+          | N | S -> Int.abs y - y' = 1
+          | _ -> Int.abs y - y' = 1 && Int.abs f - f' = 1))
 
 (** [is_valid_move phrase] is whether the move specified by [move_phrase] is
     valid or not *)
