@@ -59,16 +59,43 @@ module QFen : sig
   (** [fen_from_board b] serializes [b] into a QFen. *)
 end
 
+val is_equal : t -> t -> bool
+(** [is_equal board1 board2] is true if [board1 = board2] and false otherwise. *)
+
 val init : t
 (** [init] evaluates to the board state denoted in the fen [start] *)
 
 val player_turn : t -> color
 (** [player_turn board] is the player turn of the current board [t] *)
 
-val tile : t -> char -> int -> tile
-(** [tile board file rank] is the tile represented by [file] and [rank]. [file]
-    is in range 0..7 and [rank] is in rank a..h *)
+val tile : t -> coord -> tile
+(** [tile board square] is the tile at [square].*)
 
-val set_tile : t -> char -> int -> tile -> t
-(** [set_tile board file rank tile] is the board where the tile represented by
-    [file] and [rank] in [board] is replaced with [tile] *)
+val piece : t -> int -> quantum_piece
+(** [piece board id] is the piece of [id]. Fails if no piece is found. *)
+
+val top_piece : t -> coord -> quantum_piece
+(** [top_piece board square] is the top-most piece at [square]. Fails if no
+    piece is found. *)
+
+val piece_probability : t -> coord -> quantum_piece -> float
+(** [piece_probability board square piece] is the probability that [piece] is at
+    [square]. *)
+
+val tile_probability : t -> coord -> float
+(** [tile_probability board square] is the total probability of all pieces at
+    [square] *)
+
+val add_piece_tile : t -> coord -> int -> float -> t
+(** [add_piece_tile board square id probability] is the board where [piece] is
+    added to the tile at [square], and [square] is added to
+    [piece.superpositions] with [probability]. *)
+
+val remove_piece_tile : t -> coord -> int -> t
+(** [remove_piece_tile board square int] is the board where [piece] is removed
+    from the tile at [square], and [square] is removed from
+    [piece.superpositions]. *)
+
+val delete_piece : t -> quantum_piece -> t
+(** [delete_piece board piece] is the board where [piece] is removed from all
+    tiles. *)

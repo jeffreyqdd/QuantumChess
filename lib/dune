@@ -4,6 +4,6 @@
  (name quantum)
  (public_name Quantum)
  (libraries str ANSITerminal)
- (modules terminalUtil board command state engine frontend move)
+ (modules terminalUtil board command state engine frontend move measure)
  (instrumentation
   (backend bisect_ppx)))

@@ -40,26 +40,6 @@ let int_of_file c = int_of_char c - int_of_char 'a'
 (** [file_of_int n] converts an integer [n] to a file value *)
 let file_of_int n = n + int_of_char 'a' |> char_of_int
 
-(** [measure events] chooses the event that actually occurs out of a list of
-    events, where keys correspond to events and values correspond to the
-    probability the event occurs *)
-let measure (events : ('k * float) list) : 'k =
-  let rec make_buckets events next =
-    match events with
-    | [] -> []
-    | (e, p) :: t -> (e, next, next +. p) :: make_buckets t (next +. p)
-  in
-  let buckets = make_buckets events 0.0 in
-  let random = float_of_int (Random.int 100) in
-  let filtered =
-    List.filter
-      (fun (e, start, finish) -> start <= random && random < finish)
-      buckets
-  in
-  match filtered with
-  | [ (e, start, finish) ] -> e
-  | _ -> raise (Illegal "Event doesn't occur or occurs in multiple buckets")
-
 (* ============================================== *)
 (* ========== Private Helper Functions ========== *)
 (* ============================================== *)
@@ -165,7 +145,7 @@ let probability (piece_locale : position list) (file : char) (rank : int) :
 let coord_checker (board : Board.t) (square : coord) : occupancy =
   match square with
   | file, rank -> (
-      let pieces = Board.tile board file rank in
+      let pieces = Board.tile board (file, rank) in
       let max_percentage_list =
         List.fold_left
           (fun acc qpiece -> probability qpiece.superpositions file rank)
@@ -176,40 +156,21 @@ let coord_checker (board : Board.t) (square : coord) : occupancy =
       | 100.0 -> Stable
       | _ -> Unstable)
 
-let rec measure_piece_old (board : Board.t) (piece : quantum_piece) : Board.t =
-  let events =
-    List.map (fun x -> ((x.file, x.rank), x.probability)) piece.superpositions
-  in
-  let true_coord = measure events in
-  (* Remove [piece] from all tiles in board *)
-  let tile' board file rank =
-    Board.tile board file rank |> List.filter (fun x -> x.id <> piece.id)
-  in
-  let board' =
-    List.fold_left
-      (fun acc position ->
-        tile' acc position.file position.rank
-        |> Board.set_tile acc position.file position.rank)
-      board piece.superpositions
-  in
-  (* Add [piece] back to the tile of [true_coord] *)
-  let piece' : quantum_piece =
-    match true_coord with
-    | f, r ->
-        {
-          piece with
-          superpositions = [ { file = f; rank = r; probability = 100.0 } ];
-        }
-  in
-  let tile'' board file rank = Board.tile board file rank @ [ piece' ] in
-  let board'' =
-    match true_coord with
-    | f, r -> Board.set_tile board' f r (tile'' board' f r)
-  in
-  (* Remove other pieces that are also occupying [true_coord] *)
-  (* Make it so that other pieces have probabilities divided amongst all
-     remaining superpositions. Recursively measure those that got kicked off *)
-  board''
+(* let rec measure_piece_old (board : Board.t) (piece : quantum_piece) : Board.t
+   = let events = List.map (fun x -> ((x.file, x.rank), x.probability))
+   piece.superpositions in let true_coord = measure events in (* Remove [piece]
+   from all tiles in board *) let tile' board file rank = Board.tile board
+   (file, rank) |> List.filter (fun x -> x.id <> piece.id) in let board =
+   List.fold_left (fun acc position -> tile' acc position.file position.rank |>
+   Board.set_tile acc (position.file, position.rank)) board piece.superpositions
+   in (* Add [piece] back to the tile of [true_coord] *) let piece' :
+   quantum_piece = match true_coord with | f, r -> { piece with superpositions =
+   [ { file = f; rank = r; probability = 100.0 } ]; } in let tile'' board file
+   rank = Board.tile board (file, rank) @ [ piece' ] in let board' = match
+   true_coord with | f, r -> Board.set_tile board (f, r) (tile'' board f r) in
+   (* Remove other pieces that are also occupying [true_coord] *) (* Make it so
+   that other pieces have probabilities divided amongst all remaining
+   superpositions. Recursively measure those that got kicked off *) board' *)
 
 (** [capture_attempt phrase] is whether the player's move phrase is an attempt
     to capture an enemy piece *)
@@ -218,148 +179,6 @@ let capture_attempt (phrase : Command.move_phrase) : bool = failwith "lol"
 (** [castle_attempt phrase] is whether the player's move phrase is an attempt to
     castle their king *)
 let castle_attempt (phrase : Command.move_phrase) : bool = failwith "lol"
-
-(* =========================================== *)
-(* ========== Measurement Functions ========== *)
-(* =========================================== *)
-
-(** [position_probability board square piece] is the probability that [piece] is
-    on [square] *)
-let position_probability board square piece =
-  match square with
-  | file, rank ->
-      (piece.superpositions
-      |> List.find (fun position ->
-             position.file = file && position.rank = rank))
-        .probability
-
-(** [full_probability_piece board square] is the piece on [square] with 100%
-    probability, or [None] if none exists *)
-let full_probability_piece board square =
-  match square with
-  | file, rank -> (
-      match
-        Board.tile board file rank
-        |> List.filter (fun piece ->
-               (piece.superpositions
-               |> List.find (fun position ->
-                      position.file = file && position.rank = rank))
-                 .probability = 100.0)
-      with
-      | [] -> None
-      | [ h ] -> Some h
-      | _ -> failwith "There's more than one piece with full probability")
-
-(** [measure_piece board square] is the piece measured to be on [square] *)
-let measure_piece board square =
-  match square with
-  | file, rank -> (
-      match full_probability_piece board square with
-      | Some piece -> piece
-      | None ->
-          let events =
-            Board.tile board file rank
-            |> List.map (fun piece ->
-                   let probability =
-                     (piece.superpositions
-                     |> List.find (fun position ->
-                            position.file = file && position.rank = rank))
-                       .probability
-                   in
-                   (piece, probability))
-          in
-          measure events)
-
-(** [board_remove_piece_tile board square piece] is the board where [piece] is
-    removed from [square] *)
-let board_remove_piece_tile board square piece =
-  match square with
-  | file, rank ->
-      Board.tile board file rank
-      |> List.filter (fun piece' -> piece'.id <> piece.id)
-      |> Board.set_tile board file rank
-
-(** [board_add_piece_tile board square piece] is the board where [piece] is
-    added to [square] *)
-let board_add_piece_tile board square piece =
-  match square with
-  | file, rank ->
-      piece :: Board.tile board file rank |> Board.set_tile board file rank
-
-(** [board_without_piece board square piece] is the board where [piece] is
-    removed from all tiles *)
-let board_without_piece board square piece =
-  piece.superpositions
-  |> List.fold_left
-       (fun board_acc pos ->
-         board_remove_piece_tile board_acc (pos.file, pos.rank) piece)
-       board
-
-(** [piece_without_superpositions] is the piece where all superpositions are
-    removed except for [square] which now has 100% probability *)
-let piece_without_superpositions board square piece =
-  match square with
-  | file, rank ->
-      let position = { file; rank; probability = 100.0 } in
-      { piece with superpositions = [ position ] }
-
-(** [board_pushoff_tile board square] is the board where every piece on [square]
-    is pushed off and its probabilities reallocated to other tiles *)
-let board_pushoff_tile board square = board
-(* let bank = [] in match square with | file, rank -> Board.tile board file rank
-   |> List.iter (fun piece -> let probability = (piece.superpositions |>
-   List.find (fun position -> position.file = file && position.rank =
-   rank)).probability in ) *)
-
-(** [measurement board square] is the board after measurement occurs on
-    [square]. We perform measurement as follows:
-
-    Definition: The stability of a tile corresponds to the total percentage
-    present on that tile. We say that a piece is stable if the probabilities on
-    a tile add up to 100%. We say that a tile is unstable if the probabilities
-    add up to below 100%. We say that a tile is super-stable if the probability
-    exceeds 100%.
-
-    1. Find the piece that actually exists on [square] out of all
-    superpositions. There are two possible cases:
-
-    - First, there is a piece that has 100% probability. Then, we immediately
-      say this piece is the piece that exists on the board.
-    - Second, no pieces have 100% probability. Then, we choose a random number
-      to determine which piece actually exists.
-
-    2. Delete all other probabilities
-
-    - Delete the piece from all tiles except the tile corresponding to [square]
-    - Delete all superpositions of the piece except for [square]
-    - Delete all unused probability credits in the bank account
-
-    3. For all other superposition pieces on [square]
-
-    - Take the piece's probability p and add it to a bank account. The bank
-      account holds probability credits, which is probability that does not
-      appear on the board.
-    - From the bank account, while there still exists probability credits for
-      the piece, attempt to evenly spread all probability credits in the account
-      to all remaining superpositions of the piece. An attempt has three
-      possible outcomes:
-    - First, the attempt succeeds if the stability of the tile does not exceed
-      100%.
-    - Second, the attempt succeeds if adding the probability credits causes a
-      piece's probability on that tile to equal 100%.
-    - Third, the attempt is blocked if the tile becomes super-stable without any
-      specific piece to have a probability equal to 100%. In this case, we
-      measure the tile immediately and end this iteration of the while loop. *)
-let measurement (board : Board.t) (square : coord) : Board.t =
-  match square with
-  | file, rank ->
-      (* Find the piece that actually exists on [square] *)
-      let piece = measure_piece board square in
-
-      (* Delete all other probabilities *)
-      let board' = board_without_piece board square piece in
-      let piece' = piece_without_superpositions board square piece in
-      board_add_piece_tile board' square piece'
 
 (* ================================================================= *)
 (* ========== Public Functions that belong to module Move ========== *)

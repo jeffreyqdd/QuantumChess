@@ -27,7 +27,7 @@ let place_piece board piece_type id file rank =
         {
           id;
           piece_type;
-          superpositions = [ { file; rank; probability = 1. } ];
+          superpositions = [ { file; rank; probability = 100.0 } ];
           capture_attempt = false;
         }
       in
@@ -296,17 +296,74 @@ module QFen = struct
     p1 ^ " " ^ p2 ^ " " ^ p3 ^ " " ^ p4 ^ " " ^ p5
 end
 
+(** [set_piece board piece piece'] is the board where [piece] is replaced with
+    [piece']. *)
+let set_piece board piece piece' =
+  { board with pieces = IntMap.add piece.id piece' board.pieces }
+
 (* ================================================================== *)
 (* ========== Public Functions that belong to module Board ========== *)
 (* ================================================================== *)
+
+let is_equal board1 board2 =
+  QFen.fen_from_board board1 = QFen.fen_from_board board2
+
 let init = QFen.board_from_fen QFen.start
 let player_turn board = board.turn
 
-let tile board file rank =
-  List.fold_left
-    (fun acc piece -> IntMap.find piece board.pieces :: acc)
-    []
-    board.board.(rank).(int_of_file file)
+let tile board square =
+  match square with
+  | file, rank ->
+      List.fold_left
+        (fun acc piece -> IntMap.find piece board.pieces :: acc)
+        []
+        board.board.(rank).(int_of_file file)
 
-let set_tile board file rank tile =
-  raise (Failure "Unimplemented: Board.set_tile")
+let piece board id = IntMap.find id board.pieces
+
+let top_piece board square =
+  match tile board square with
+  | h :: t -> h
+  | _ -> failwith "error"
+
+let piece_probability board square piece =
+  (piece.superpositions |> List.find (fun pos -> (pos.file, pos.rank) = square))
+    .probability
+
+let tile_probability board square =
+  tile board square
+  |> List.fold_left
+       (fun acc piece -> acc +. piece_probability board square piece)
+       0.0
+
+let add_piece_tile board square id probability =
+  let piece = piece board id in
+  match square with
+  | file, rank ->
+      board.board.(rank).(int_of_file file) <-
+        piece.id :: pieces_at board file rank;
+      let position = { file; rank; probability } in
+      let piece' =
+        { piece with superpositions = position :: piece.superpositions }
+      in
+      set_piece board piece piece'
+
+let remove_piece_tile board square id =
+  let piece = piece board id in
+  match square with
+  | file, rank ->
+      board.board.(rank).(int_of_file file) <-
+        pieces_at board file rank |> List.filter (fun id -> id <> piece.id);
+      let positions =
+        piece.superpositions
+        |> List.filter (fun pos -> (pos.file, pos.rank) <> square)
+      in
+      let piece' = { piece with superpositions = positions } in
+      set_piece board piece piece'
+
+let delete_piece board piece =
+  piece.superpositions
+  |> List.fold_left
+       (fun board_acc pos ->
+         remove_piece_tile board_acc (pos.file, pos.rank) piece.id)
+       board

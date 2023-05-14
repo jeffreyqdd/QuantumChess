@@ -28,7 +28,7 @@ let piece_to_string (p : State.piece_name) (c : State.color) : string =
 (** [tile board file rank] is the tile represented by [file] and [rank] on some
     [board] *)
 let tile (board : Board.t) (file : char) (rank : int) : string =
-  match Board.tile board file rank with
+  match Board.tile board (file, rank) with
   | [] -> "."
   | h :: t -> piece_to_string h.piece_type.name h.piece_type.color
 
@@ -66,6 +66,10 @@ let probability_at_pos (piece : quantum_piece) (file : char) (rank : int) =
         if h.file = file && h.rank = rank then h.probability else helper t
   in
   helper piece.superpositions
+
+let draw board file rank =
+  (* let _ = Sys.command "clear" in *)
+  ranks |> List.iter (fun rank -> print_line board rank)
 
 let tile_info board file rank =
   let this_tile = Board.tile board file rank in
