@@ -194,15 +194,13 @@ and board_without_superstables board bank id =
       find_superstable_positions !board !pos_lst !to_add
       |> List.fold_left
            (fun board_acc pos ->
-             !pos_lst |> string_of_list string_of_position |> print_endline;
-             Board.piece !board id |> string_of_piece |> print_endline;
-             piece_credits bank id |> string_of_float |> print_endline;
-             Board.tile_probability !board (pos.file, pos.rank)
-             |> string_of_float |> print_endline;
-             print_endline
-               ("board_without_superstables: measure_tile called\n\
-                \                on " ^ Char.escaped pos.file
-              ^ string_of_int pos.rank);
+             (* !pos_lst |> string_of_list string_of_position |> print_endline;
+                Board.piece !board id |> string_of_piece |> print_endline;
+                piece_credits bank id |> string_of_float |> print_endline;
+                Board.tile_probability !board (pos.file, pos.rank) |>
+                string_of_float |> print_endline; print_endline
+                ("board_without_superstables: measure_tile called\n\ \ on " ^
+                Char.escaped pos.file ^ string_of_int pos.rank); *)
              measure_tile board_acc (pos.file, pos.rank) bank)
            !board;
     pos_lst := (Board.piece !board id).superpositions;
