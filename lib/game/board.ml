@@ -296,11 +296,6 @@ module QFen = struct
     p1 ^ " " ^ p2 ^ " " ^ p3 ^ " " ^ p4 ^ " " ^ p5
 end
 
-(** [set_piece board piece piece'] is the board where [piece] is replaced with
-    [piece']. *)
-let set_piece board piece piece' =
-  { board with pieces = IntMap.add piece.id piece' board.pieces }
-
 (* ================================================================== *)
 (* ========== Public Functions that belong to module Board ========== *)
 (* ================================================================== *)
@@ -320,6 +315,9 @@ let tile board square =
         board.board.(rank).(int_of_file file)
 
 let piece board id = IntMap.find id board.pieces
+
+let set_piece board piece piece' =
+  { board with pieces = IntMap.add piece.id piece' board.pieces }
 
 let top_piece board square =
   match tile board square with
