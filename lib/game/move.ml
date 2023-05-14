@@ -40,6 +40,27 @@ let int_of_file c = int_of_char c - int_of_char 'a'
 (** [file_of_int n] converts an integer [n] to a file value *)
 let file_of_int n = n + int_of_char 'a' |> char_of_int
 
+(** [tile_of_coord board square] is the tile that represents the coord [square]
+    in [board]. *)
+let tile_of_coord (board : Board.t) (square : coord) : tile =
+  match square with
+  | file, rank -> Board.tile board (file, rank)
+
+(** [check_occupancy_color board square] returns what color the pieces on the
+    board are. If color accumulator ever becomes White and then matches a
+    different piece to Black in the tile of coord [square] in [board], then
+    throws an error. *)
+let check_occupancy_color (board : Board.t) (square : coord) : color =
+  let pieces = Board.tile board square in
+  List.fold_left
+    (fun acc x ->
+      match x.piece_type.color with
+      | Black ->
+          if acc = Black then Black
+          else failwith "There is a color conflict tile"
+      | White -> White)
+    Black pieces
+
 (* ============================================== *)
 (* ========== Private Helper Functions ========== *)
 (* ============================================== *)
@@ -151,7 +172,7 @@ let probability (piece_locale : position list) (file : char) (rank : int) :
 let coord_checker (board : Board.t) (square : coord) : occupancy =
   match square with
   | file, rank -> (
-      let pieces = Board.tile board (file, rank) in
+      let pieces = tile_of_coord board (file, rank) in
       let max_percentage_list =
         List.fold_left
           (fun acc qpiece -> probability qpiece.superpositions file rank)
