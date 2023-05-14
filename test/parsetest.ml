@@ -56,11 +56,62 @@ let parse_test (name : string) (input : string) (expected_output : command) :
 
 let tests =
   [
-    parse_test "resign" "     resign" Resign;
+    parse_test "resign1" "     resign" Resign;
+    parse_test "resign2" "  resign        " Resign;
+    parse_test "draw1" "     draw" Draw;
+    parse_test "draw2" "  draw     " Draw;
+    parse_test "move1" " a1 4 a8"
+      (Move
+         {
+           id = 4;
+           start_tiles = (Some ('a', 1), None);
+           end_tiles = (Some ('a', 8), None);
+         });
+    parse_test "move2" "      h1     40   h8   "
+      (Move
+         {
+           id = 40;
+           start_tiles = (Some ('h', 1), None);
+           end_tiles = (Some ('h', 8), None);
+         });
+    parse_test "split1" " a1 4 a7 a8"
+      (Move
+         {
+           id = 4;
+           start_tiles = (Some ('a', 1), None);
+           end_tiles = (Some ('a', 7), Some ('a', 8));
+         });
+    parse_test "split2" "      a1  4   a7  a8"
+      (Move
+         {
+           id = 4;
+           start_tiles = (Some ('a', 1), None);
+           end_tiles = (Some ('a', 7), Some ('a', 8));
+         });
+    parse_test "merge1" " a1 g6 4 a8"
+      (Move
+         {
+           id = 4;
+           start_tiles = (Some ('a', 1), Some ('g', 6));
+           end_tiles = (Some ('a', 8), None);
+         });
+    parse_test "merge2" "  h1 g6 4 a8 "
+      (Move
+         {
+           id = 4;
+           start_tiles = (Some ('h', 1), Some ('g', 6));
+           end_tiles = (Some ('a', 8), None);
+         });
     ( "parse exception empty" >:: fun _ ->
       assert_raises Empty (fun () -> parse "     ") );
-    ( "parse exception malformed quit" >:: fun _ ->
+    ( "parse exception malformed draw" >:: fun _ ->
       assert_raises Malformed (fun () -> parse " draw     funky") );
-    ( "parse exception malformed go" >:: fun _ ->
-      assert_raises Malformed (fun () -> parse "  move ") );
+    ( "parse exception malformed move1" >:: fun _ ->
+      assert_raises Malformed (fun () -> parse "  a1 a2 a4 ") );
+    ( "parse exception malformed move2" >:: fun _ ->
+      assert_raises Malformed (fun () -> parse "  32 a2 a4 ") );
+    ( "parse exception malformed move3" >:: fun _ ->
+      assert_raises Malformed (fun () -> parse "  a1 a2 32 ") );
+    ( "parse exception malformed move4" >:: fun _ ->
+      assert_raises Malformed (fun () -> parse "  a1 a2 33 a4 a5 ") );
   ]
