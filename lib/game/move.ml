@@ -120,8 +120,10 @@ let specify_move (phrase : Command.move_phrase) : move_type =
 
 (** [is_legal_move name start finish] checks to see whether moving piece type
     [name] from [start] to [finish] is a legally allowed chess move. *)
-let is_legal_move (board : Board.t) (name : piece_name) (color : color)
-    (start : coord) (finish : coord) : bool =
+let is_legal_move (board : Board.t) (piece : quantum_piece) (start : coord)
+    (finish : coord) : bool =
+  let name = piece.piece_type.name in
+  let color = piece.piece_type.color in
   match (start, finish) with
   | (x, y), (x', y') -> (
       let f = int_of_file x in
@@ -130,7 +132,7 @@ let is_legal_move (board : Board.t) (name : piece_name) (color : color)
       match name with
       | Pawn -> (
           match move_type with
-          | N -> y + 1 = y'
+          | N -> y + 1 = y' || ((not piece.has_moved) && y + 2 = y')
           | NW | NE ->
               if (f' = f + 1 && y' = y + 1) || (f' = f - 1 && y' = y + 1) then
                 check_occupancy_color board finish <> color
@@ -151,7 +153,11 @@ let is_legal_move (board : Board.t) (name : piece_name) (color : color)
           match move_type with
           | Jump -> false
           | _ -> true)
-      | King -> failwith "lol")
+      | King -> (
+          match move_type with
+          | Jump -> false
+          | E -> f' = f + 1 || ((not piece.has_moved) && f' = f + 2)
+          | W -> f' = f - 1 || ((not piece.has_moved) && f' = f - 2)))
 
 (** [is_valid_move phrase] is whether the move specified by [move_phrase] is
     valid or not *)
