@@ -61,19 +61,6 @@ let check_occupancy_color (board : Board.t) (square : coord) : color =
       | White -> White)
     Black pieces
 
-(* ============================================== *)
-(* ========== Private Helper Functions ========== *)
-(* ============================================== *)
-
-(** [is_legal_move name start finish] checks to see whether moving piece type
-    [name] from [start] to [finish] is a legally allowed chess move. *)
-let is_legal_move (name : piece_name) (start : coord) (finish : coord) : bool =
-  match (start, finish) with
-  | (x, y), (x', y') -> (
-      match name with
-      | Pawn -> if y + 1 = y' then true else false
-      | Rook | Knight | Bishop | Queen | King -> failwith "lol")
-
 (** [diagonal_check x y x' y'] returns the direction type for a diagonal
     movement, from a piece able to traverse in all diagonals, based on the
     provided before and after coordinates [x] [x'] [y] [y']. *)
@@ -109,6 +96,68 @@ let piece_direction (name : piece_name) (start : coord) (finish : coord) :
           | false, false -> diagonal_check x y x' y'
           | _ -> raise (Illegal "can't stay in place")))
 
+(** [probability piece_locale file rank] returns the probability of a piece at a
+    certain position based on [file] and [rank] in the position list
+    [piece_locale]. *)
+let probability (piece_locale : position list) (file : char) (rank : int) :
+    float list =
+  List.fold_left
+    (fun acc x ->
+      if x.file = file && x.rank = rank then acc @ [ x.probability ] else acc)
+    [] piece_locale
+
+(** [specify_move phrase] determines whether the move specified by [phrase] is a
+    standard move, a merge move, or a split move *)
+let specify_move (phrase : Command.move_phrase) : move_type =
+  match (phrase.start_tiles, phrase.end_tiles) with
+  | (Some x, None), (Some s, None) -> Standard
+  | (Some x, Some y), (Some s, None) -> Merge
+  | (Some x, None), (Some s, Some t) -> Split
+  | _ -> raise (Illegal "Not a move option.")
+(* ============================================== *)
+(* ========== Private Helper Functions ========== *)
+(* ============================================== *)
+
+(** [is_legal_move name start finish] checks to see whether moving piece type
+    [name] from [start] to [finish] is a legally allowed chess move. *)
+let is_legal_move (board : Board.t) (name : piece_name) (color : color)
+    (start : coord) (finish : coord) : bool =
+  match (start, finish) with
+  | (x, y), (x', y') -> (
+      let f = int_of_file x in
+      let f' = int_of_file x' in
+      let move_type = piece_direction name start finish in
+      match name with
+      | Pawn -> (
+          match move_type with
+          | N -> y + 1 = y'
+          | NW | NE ->
+              if (f' = f + 1 && y' = y + 1) || (f' = f - 1 && y' = y + 1) then
+                check_occupancy_color board finish <> color
+              else false
+          | _ -> false)
+      | Rook -> (
+          match move_type with
+          | N | S | W | E -> true
+          | _ -> false)
+      | Knight ->
+          (Int.abs f - f' = 1 && Int.abs y - y' = 2)
+          || (Int.abs f - f' = 2 && Int.abs y - y' = 1)
+      | Bishop -> (
+          match move_type with
+          | NE | NW | SE | SW -> true
+          | _ -> false)
+      | Queen -> (
+          match move_type with
+          | Jump -> false
+          | _ -> true)
+      | King -> failwith "lol")
+
+(** [is_valid_move phrase] is whether the move specified by [move_phrase] is
+    valid or not *)
+let is_valid_move (phrase : Command.move_phrase) : bool =
+  raise (Failure "Unimplmented: Move.is_valid_move")
+
 (** [make_path direction curr goal acc] helps to append all coord traversals of
     direction [direction] from a relative square [curr] to an end sqaure [goal]. *)
 let rec make_path (direction : direction) (curr : coord) (goal : coord)
@@ -142,30 +191,6 @@ let move_path (name : piece_name) (start : coord) (finish : coord) : coord list
   | h :: t -> t
   | [] -> failwith "this is an invalid move that shouldn't have been processed"
 
-(** [is_valid_move phrase] is whether the move specified by [move_phrase] is
-    valid or not *)
-let is_valid_move (phrase : Command.move_phrase) : bool =
-  raise (Failure "Unimplmented: Move.is_valid_move")
-
-(** [specify_move phrase] determines whether the move specified by [phrase] is a
-    standard move, a merge move, or a split move *)
-let specify_move (phrase : Command.move_phrase) : move_type =
-  match (phrase.start_tiles, phrase.end_tiles) with
-  | (Some x, None), (Some s, None) -> Standard
-  | (Some x, Some y), (Some s, None) -> Merge
-  | (Some x, None), (Some s, Some t) -> Split
-  | _ -> raise (Illegal "Not a move option.")
-
-(** [probability piece_locale file rank] returns the probability of a piece at a
-    certain position based on [file] and [rank] in the position list
-    [piece_locale]. *)
-let probability (piece_locale : position list) (file : char) (rank : int) :
-    float list =
-  List.fold_left
-    (fun acc x ->
-      if x.file = file && x.rank = rank then acc @ [ x.probability ] else acc)
-    [] piece_locale
-
 (** [coord_checker board square] checks whether a coordinate location on a
     certain coord [square] has a piece, has superposition piece(s), or is empty
     in the board state [board]. *)
@@ -182,22 +207,6 @@ let coord_checker (board : Board.t) (square : coord) : occupancy =
       | 0.0 -> Empty
       | 100.0 -> Stable
       | _ -> Unstable)
-
-(* let rec measure_piece_old (board : Board.t) (piece : quantum_piece) : Board.t
-   = let events = List.map (fun x -> ((x.file, x.rank), x.probability))
-   piece.superpositions in let true_coord = measure events in (* Remove [piece]
-   from all tiles in board *) let tile' board file rank = Board.tile board
-   (file, rank) |> List.filter (fun x -> x.id <> piece.id) in let board =
-   List.fold_left (fun acc position -> tile' acc position.file position.rank |>
-   Board.set_tile acc (position.file, position.rank)) board piece.superpositions
-   in (* Add [piece] back to the tile of [true_coord] *) let piece' :
-   quantum_piece = match true_coord with | f, r -> { piece with superpositions =
-   [ { file = f; rank = r; probability = 100.0 } ]; } in let tile'' board file
-   rank = Board.tile board (file, rank) @ [ piece' ] in let board' = match
-   true_coord with | f, r -> Board.set_tile board (f, r) (tile'' board f r) in
-   (* Remove other pieces that are also occupying [true_coord] *) (* Make it so
-   that other pieces have probabilities divided amongst all remaining
-   superpositions. Recursively measure those that got kicked off *) board' *)
 
 (** [capture_attempt phrase] is whether the player's move phrase is an attempt
     to capture an enemy piece *)
