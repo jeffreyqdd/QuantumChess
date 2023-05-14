@@ -28,7 +28,7 @@ let place_piece board piece_type id file rank =
           id;
           piece_type;
           superpositions = [ { file; rank; probability = 100.0 } ];
-          capture_attempt = false;
+          has_moved = false;
         }
       in
       { board with pieces = IntMap.add id new_piece board.pieces }
@@ -46,7 +46,7 @@ let place_piece board piece_type id file rank =
 
 let update_capture_state board id capture_state =
   let piece = qpiece_of_id board id in
-  let new_piece = { piece with capture_attempt = true } in
+  let new_piece = { piece with has_moved = true } in
   { board with pieces = IntMap.add id new_piece board.pieces }
 
 (* ========== Start of QFen module ========== *)
@@ -194,9 +194,7 @@ module QFen = struct
       match lst with
       | [] -> ""
       | (k, v) :: t ->
-          let current_string =
-            if v.capture_attempt then string_of_int v.id else ""
-          in
+          let current_string = if v.has_moved then string_of_int v.id else "" in
           let next_string = gen_string t in
           if current_string = "" then next_string
           else if next_string = "" then current_string
@@ -296,11 +294,6 @@ module QFen = struct
     p1 ^ " " ^ p2 ^ " " ^ p3 ^ " " ^ p4 ^ " " ^ p5
 end
 
-(** [set_piece board piece piece'] is the board where [piece] is replaced with
-    [piece']. *)
-let set_piece board piece piece' =
-  { board with pieces = IntMap.add piece.id piece' board.pieces }
-
 (* ================================================================== *)
 (* ========== Public Functions that belong to module Board ========== *)
 (* ================================================================== *)
@@ -320,6 +313,9 @@ let tile board square =
         board.board.(rank).(int_of_file file)
 
 let piece board id = IntMap.find id board.pieces
+
+let set_piece board piece piece' =
+  { board with pieces = IntMap.add piece.id piece' board.pieces }
 
 let top_piece board square =
   match tile board square with
