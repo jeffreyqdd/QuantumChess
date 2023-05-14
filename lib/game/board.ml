@@ -294,14 +294,23 @@ module QFen = struct
     p1 ^ " " ^ p2 ^ " " ^ p3 ^ " " ^ p4 ^ " " ^ p5
 end
 
+(** [copy t] is a new instance of [Board.t]. Changing this instance will not
+    affect the original instance of [t]. *)
+let copy t =
+  let new_board = Array.make_matrix 8 8 [] in
+  for rank = 0 to 7 do
+    new_board.(rank) <- Array.copy t.board.(rank)
+  done;
+  { t with board = new_board }
+
 (* ================================================================== *)
 (* ========== Public Functions that belong to module Board ========== *)
 (* ================================================================== *)
 
+(* GETTER FUNCTIONS *)
 let is_equal board1 board2 =
   QFen.fen_from_board board1 = QFen.fen_from_board board2
 
-let init = QFen.board_from_fen QFen.start
 let player_turn board = board.turn
 
 let tile board square =
@@ -314,9 +323,6 @@ let tile board square =
 
 let piece board id = IntMap.find id board.pieces
 let pieces board = IntMap.fold (fun k v acc -> v :: acc) board.pieces []
-
-let set_piece board piece piece' =
-  { board with pieces = IntMap.add piece.id piece' board.pieces }
 
 let top_piece board square =
   match tile board square with
@@ -333,7 +339,15 @@ let tile_probability board square =
        (fun acc piece -> acc +. piece_probability board square piece)
        0.0
 
+(* SETTER FUNCTIONS *)
+let init = QFen.board_from_fen QFen.start
+
+let set_piece board piece piece' =
+  let board = copy board in
+  { board with pieces = IntMap.add piece.id piece' board.pieces }
+
 let add_piece_tile board square id probability =
+  let board = copy board in
   let piece = piece board id in
   match square with
   | file, rank ->
@@ -346,6 +360,7 @@ let add_piece_tile board square id probability =
       set_piece board piece piece'
 
 let remove_piece_tile board square id =
+  let board = copy board in
   let piece = piece board id in
   match square with
   | file, rank ->
@@ -359,6 +374,7 @@ let remove_piece_tile board square id =
       set_piece board piece piece'
 
 let delete_piece board piece =
+  let board = copy board in
   piece.superpositions
   |> List.fold_left
        (fun board_acc pos ->
