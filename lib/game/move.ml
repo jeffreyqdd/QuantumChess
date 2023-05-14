@@ -114,12 +114,20 @@ let specify_move (phrase : Command.move_phrase) : move_type =
   | (Some x, Some y), (Some s, None) -> Merge
   | (Some x, None), (Some s, Some t) -> Split
   | _ -> raise (Illegal "Not a move option.")
+
+let make_faulty_piece : quantum_piece =
+  {
+    id = 1;
+    piece_type = { name = Pawn; color = Black };
+    superpositions = [];
+    has_moved = false;
+  }
 (* ============================================== *)
 (* ========== Private Helper Functions ========== *)
 (* ============================================== *)
 
-(** [is_legal_move name start finish] checks to see whether moving piece type
-    [name] from [start] to [finish] is a legally allowed chess move. *)
+(** [is_legal_move board piece start finish] checks to see whether moving piece
+    [piece] from [start] to [finish] is a legally allowed chess move in [board]. *)
 let is_legal_move (board : Board.t) (piece : quantum_piece) (start : coord)
     (finish : coord) : bool =
   let name = piece.piece_type.name in
@@ -157,14 +165,7 @@ let is_legal_move (board : Board.t) (piece : quantum_piece) (start : coord)
           match move_type with
           | Jump -> false
           | E ->
-              let (faulty_piece : quantum_piece) =
-                {
-                  id = 1;
-                  piece_type = { name = Pawn; color = Black };
-                  superpositions = [];
-                  has_moved = false;
-                }
-              in
+              let (faulty_piece : quantum_piece) = make_faulty_piece in
               let target_rook =
                 try Board.top_piece board (file_of_int (f + 3), y)
                 with _ -> faulty_piece
@@ -195,16 +196,13 @@ let is_legal_move (board : Board.t) (piece : quantum_piece) (start : coord)
           | N | S -> Int.abs y - y' = 1
           | _ -> Int.abs y - y' = 1 && Int.abs f - f' = 1))
 
-(** [is_valid_move phrase] is whether the move specified by [move_phrase] is
-    valid or not *)
-let is_valid_move (phrase : Command.move_phrase) : bool =
-  raise (Failure "Unimplmented: Move.is_valid_move")
-
 (** [make_path direction curr goal acc] helps to append all coord traversals of
     direction [direction] from a relative square [curr] to an end sqaure [goal]. *)
 let rec make_path (direction : direction) (curr : coord) (goal : coord)
     (acc : coord list) : coord list =
-  if curr = goal then acc @ [ curr ]
+  (* this case is used for when we want to involve the final tile*)
+  (* if curr = goal then acc @ [ curr ] *)
+  if curr = goal then acc
   else
     let xf = int_of_file (fst curr) in
     let xr = snd curr in
@@ -223,8 +221,8 @@ let rec make_path (direction : direction) (curr : coord) (goal : coord)
     | NW ->
         make_path direction (file_of_int (xf - 1), xr + 1) goal acc @ [ curr ]
 
-(** [move_path start finish] is a list of all coordinates between [start] and
-    [finish] in the order of traversal sequence. *)
+(** [move_path name start finish] is a list of all coordinates between [start]
+    and [finish] in the order of traversal sequence of the piece variant [name]. *)
 let move_path (name : piece_name) (start : coord) (finish : coord) : coord list
     =
   let move_direction = piece_direction name start finish in
@@ -250,15 +248,175 @@ let coord_checker (board : Board.t) (square : coord) : occupancy =
       | 100.0 -> Stable
       | _ -> Unstable)
 
+(** [is_valid_traversal board piece path] returns whether or not a piece [piece]
+    can move along the path [path] without any collision in state [board]. *)
+let is_valid_traversal (board : Board.t) (piece : quantum_piece)
+    (path : coord list) : bool =
+  List.fold_left
+    (fun acc x ->
+      if Board.tile_probability board x < 100.0 then true else false)
+    true path
+
+(** [is_valid_finish board square piece] is whether the final location [square]
+    is a valid move choice for piece [piece] on state [board]. *)
+let is_valid_finish (board : Board.t) (phrase : Command.move_phrase) : bool =
+  let piece = Board.piece board phrase.id in
+  match (phrase.start_tiles, phrase.end_tiles) with
+  | (Some x, None), (Some s, None) ->
+      let occupancy = Board.tile_probability board s in
+      if occupancy = 0.0 then true
+      else if
+        (Board.top_piece board s).piece_type.color <> piece.piece_type.color
+      then true
+      else if occupancy +. Board.piece_probability board x piece <= 100.0 then
+        true
+      else false
+  | (Some x, Some y), (Some s, None) ->
+      let occupancy = Board.tile_probability board s in
+      if occupancy = 0.0 then true
+      else if
+        (Board.top_piece board s).piece_type.color <> piece.piece_type.color
+      then false
+      else if
+        occupancy
+        +. Board.piece_probability board x piece
+        +. Board.piece_probability board y piece
+        <= 100.0
+      then true
+      else false
+  | (Some x, None), (Some s, Some t) ->
+      let o1 = Board.tile_probability board s in
+      let o2 = Board.tile_probability board t in
+      if o1 = 0.0 && o2 = 0.0 then true
+      else if
+        (Board.top_piece board s).piece_type.color <> piece.piece_type.color
+        || (Board.top_piece board t).piece_type.color <> piece.piece_type.color
+      then false
+      else if
+        o1 +. (Board.piece_probability board x piece /. 2.0) <= 100.0
+        && o2 +. (Board.piece_probability board x piece /. 2.0) <= 100.0
+      then true
+      else false
+  | _ -> raise (Illegal "Not a move option.")
+
+(** [is_valid_move board phrase] is whether the move specified by [move_phrase]
+    is valid or not in state [board]. *)
+let is_valid_move (board : Board.t) (phrase : Command.move_phrase) : bool =
+  let piece = Board.piece board phrase.id in
+  match (phrase.start_tiles, phrase.end_tiles) with
+  | (Some x, None), (Some s, None) ->
+      is_valid_traversal board piece (move_path piece.piece_type.name x s)
+      && is_valid_finish board phrase
+  | (Some x, Some y), (Some s, None) ->
+      is_valid_traversal board piece (move_path piece.piece_type.name x s)
+      && is_valid_traversal board piece (move_path piece.piece_type.name y s)
+      && is_valid_finish board phrase
+  | (Some x, None), (Some s, Some t) ->
+      is_valid_traversal board piece (move_path piece.piece_type.name x s)
+      && is_valid_traversal board piece (move_path piece.piece_type.name x t)
+      && is_valid_finish board phrase
+  | _ -> raise (Illegal "Not a move option.")
+
 (** [capture_attempt phrase] is whether the player's move phrase is an attempt
     to capture an enemy piece *)
-let capture_attempt (phrase : Command.move_phrase) : bool = failwith "lol"
+let capture_attempt (phrase : Command.move_phrase) : bool =
+  failwith "no use case"
 
 (** [castle_attempt phrase] is whether the player's move phrase is an attempt to
     castle their king. *)
-let castle_attempt (phrase : Command.move_phrase) : bool = failwith "lol"
+let castle_attempt (phrase : Command.move_phrase) : bool =
+  failwith "no use case"
+
+(** [make_castle_option target_rook rank king_file king_file'] makes a
+    move_phrase for the rooks in the case of a castle. *)
+let make_castle_option (target_rook : quantum_piece) (rank : int)
+    (king_file : int) (king_file' : int) : Command.move_phrase =
+  let f' = king_file' in
+  let f = king_file in
+  let b = rank in
+  {
+    id = target_rook.id;
+    start_tiles = (Some ((List.hd target_rook.superpositions).file, b), None);
+    end_tiles =
+      (if f' - f = -2 then
+       ( Some
+           ( file_of_int
+               (int_of_file (List.hd target_rook.superpositions).file + 3),
+             b ),
+         None )
+      else
+        ( Some
+            ( file_of_int
+                (int_of_file (List.hd target_rook.superpositions).file - 2),
+              b ),
+          None ));
+  }
+
+(** [is_valid_castle board phrase] returns whether a move is a valid castle or
+    not. *)
+let is_valid_castle (board : Board.t) (phrase : Command.move_phrase) : bool =
+  let piece = Board.piece board phrase.id in
+  if piece.piece_type.name = King then
+    match (phrase.start_tiles, phrase.end_tiles) with
+    | (Some x, None), (Some s, None) -> (
+        match (x, s) with
+        | (a, b), (a', b') ->
+            let f = int_of_file a in
+            let f' = int_of_file a' in
+            let (faulty_piece : quantum_piece) = make_faulty_piece in
+            let target_rook =
+              if f' - f = -2 then
+                try Board.top_piece board (file_of_int (f - 4), b)
+                with _ -> faulty_piece
+              else if f' - f = 2 then
+                try Board.top_piece board (file_of_int (f + 3), b)
+                with _ -> faulty_piece
+              else faulty_piece
+            in
+            if
+              target_rook.piece_type.name = Rook
+              && (not target_rook.has_moved)
+              && not piece.has_moved
+            then
+              is_valid_finish board phrase
+              && is_valid_finish board (make_castle_option target_rook b f f')
+            else false)
+    | (Some x, Some y), (Some s, None) -> false
+    | (Some x, None), (Some s, Some t) -> (
+        match (x, s, t) with
+        | (a, b), (c, d), (e, f) ->
+            let g = int_of_file a in
+            let g' = int_of_file c in
+            let g'' = int_of_file e in
+            let (faulty_piece : quantum_piece) = make_faulty_piece in
+            let tr1 =
+              try Board.top_piece board (file_of_int (f - 4), b)
+              with _ -> faulty_piece
+            in
+            let tr2 =
+              try Board.top_piece board (file_of_int (f + 3), b)
+              with _ -> faulty_piece
+            in
+            if
+              tr1.piece_type.name = Rook && (not tr1.has_moved)
+              && tr2.piece_type.name = Rook && (not tr2.has_moved)
+              && not piece.has_moved
+            then
+              is_valid_finish board phrase
+              && is_valid_finish board (make_castle_option tr1 b g g')
+              && is_valid_finish board (make_castle_option tr1 b g g'')
+            else false)
+    | _ -> false
+  else false
 
 (* ================================================================= *)
 (* ========== Public Functions that belong to module Move ========== *)
 (* ================================================================= *)
-let move board phrase = raise (Failure "Unimplemented: Move.move")
+let move (board : Board.t) (phrase : Command.move_phrase) : Board.t =
+  let piece = Board.piece board phrase.id in
+  match (phrase.start_tiles, phrase.end_tiles) with
+  | (Some x, None), (Some s, None) ->
+      if is_legal_move board piece x s then board else board
+  | (Some x, Some y), (Some s, None) -> board
+  | (Some x, None), (Some s, Some t) -> board
+  | _ -> raise (Illegal "Not a move option.")
