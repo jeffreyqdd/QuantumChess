@@ -240,9 +240,27 @@ and exists_full_probability_piece board pos_list =
       acc || full_probability_piece board (pos.file, pos.rank) <> None)
     false pos_list
 
+let rep_ok board board' =
+  let board_num_pieces =
+    Board.pieces board
+    |> List.filter (fun p -> List.length p.superpositions > 0)
+    |> List.length
+  in
+  let board'_num_pieces =
+    Board.pieces board'
+    |> List.filter (fun p -> List.length p.superpositions > 0)
+    |> List.length
+  in
+  board_num_pieces = board'_num_pieces
+
 (* ==================================================================== *)
 (* ========== Public Functions that belong to module Measure ========== *)
 (* ==================================================================== *)
-let measurement board square =
+let rec measurement board square =
   let bank = ref IntMap.empty in
-  measure_tile board square bank
+  let new_board = measure_tile board square bank in
+  match rep_ok board new_board with
+  | true -> new_board
+  | false ->
+      print_endline "rep_ok violated";
+      measurement board square

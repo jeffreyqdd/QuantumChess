@@ -5,6 +5,7 @@ open State
 module IntMap = Map.Make (Int)
 
 let _ =
+  let _ = Sys.command "clear" in
   let board = ref (QFen.board_from_fen "r0/b1/k2/q3/p4/8/8/8 - b - -") in
   let black_rook_id = (Board.top_piece !board ('a', 7)).id in
   let black_bishop_id = (Board.top_piece !board ('a', 6)).id in
