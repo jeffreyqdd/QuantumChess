@@ -40,6 +40,27 @@ let int_of_file c = int_of_char c - int_of_char 'a'
 (** [file_of_int n] converts an integer [n] to a file value *)
 let file_of_int n = n + int_of_char 'a' |> char_of_int
 
+(** [tile_of_coord board square] is the tile that represents the coord [square]
+    in [board]. *)
+let tile_of_coord (board : Board.t) (square : coord) : tile =
+  match square with
+  | file, rank -> Board.tile board (file, rank)
+
+(** [check_occupancy_color board square] returns what color the pieces on the
+    board are. If color accumulator ever becomes White and then matches a
+    different piece to Black in the tile of coord [square] in [board], then
+    throws an error. *)
+let check_occupancy_color (board : Board.t) (square : coord) : color =
+  let pieces = Board.tile board square in
+  List.fold_left
+    (fun acc x ->
+      match x.piece_type.color with
+      | Black ->
+          if acc = Black then Black
+          else failwith "There is a color conflict tile"
+      | White -> White)
+    Black pieces
+
 (* ============================================== *)
 (* ========== Private Helper Functions ========== *)
 (* ============================================== *)
@@ -47,8 +68,11 @@ let file_of_int n = n + int_of_char 'a' |> char_of_int
 (** [is_legal_move name start finish] checks to see whether moving piece type
     [name] from [start] to [finish] is a legally allowed chess move. *)
 let is_legal_move (name : piece_name) (start : coord) (finish : coord) : bool =
-  match name with
-  | Pawn | Rook | Knight | Bishop | Queen | King -> failwith "lol"
+  match (start, finish) with
+  | (x, y), (x', y') -> (
+      match name with
+      | Pawn -> if y + 1 = y' then true else false
+      | Rook | Knight | Bishop | Queen | King -> failwith "lol")
 
 (** [diagonal_check x y x' y'] returns the direction type for a diagonal
     movement, from a piece able to traverse in all diagonals, based on the
@@ -66,25 +90,24 @@ let piece_direction (name : piece_name) (start : coord) (finish : coord) :
     direction =
   match (start, finish) with
   | (x, y), (x', y') -> (
-      let horizontal_move = x = x' in
-      let vertical_move = y = y' in
+      let horizontal_move = y = y' in
+      let vertical_move = x = x' in
       match name with
       | Knight -> Jump
       | Pawn -> if x = x' then N else if x' > x then NE else NW
       | Bishop -> diagonal_check x y x' y'
       | Rook -> (
           match (horizontal_move, vertical_move) with
-          | true, false -> if y' > y then N else S
-          | false, true -> if x' > x then E else W
-          | _ ->
-              failwith "dummy you can't have a rook move diagonal or stay still"
+          | false, true -> if y' > y then N else S
+          | true, false -> if x' > x then E else W
+          | _ -> raise (Illegal "can't have a rook move diagonal or stay still")
           )
       | Queen | King -> (
           match (horizontal_move, vertical_move) with
-          | true, false -> if y' > y then N else S
-          | false, true -> if x' > x then E else W
+          | false, true -> if y' > y then N else S
+          | true, false -> if x' > x then E else W
           | false, false -> diagonal_check x y x' y'
-          | _ -> failwith "dummy you can't stay in place"))
+          | _ -> raise (Illegal "can't stay in place")))
 
 (** [make_path direction curr goal acc] helps to append all coord traversals of
     direction [direction] from a relative square [curr] to an end sqaure [goal]. *)
@@ -96,18 +119,18 @@ let rec make_path (direction : direction) (curr : coord) (goal : coord)
     let xr = snd curr in
     match direction with
     | Jump -> make_path direction goal goal acc
-    | N -> make_path direction (file_of_int (xf + 1), xr) goal acc @ [ curr ]
+    | N -> make_path direction (fst curr, xr + 1) goal acc @ [ curr ]
     | NE ->
         make_path direction (file_of_int (xf + 1), xr + 1) goal acc @ [ curr ]
-    | E -> make_path direction (fst curr, xr + 1) goal acc @ [ curr ]
+    | E -> make_path direction (file_of_int (xf + 1), xr) goal acc @ [ curr ]
     | SE ->
-        make_path direction (file_of_int (xf - 1), xr + 1) goal acc @ [ curr ]
-    | S -> make_path direction (file_of_int (xf - 1), xr) goal acc @ [ curr ]
+        make_path direction (file_of_int (xf + 1), xr - 1) goal acc @ [ curr ]
+    | S -> make_path direction (fst curr, xr - 1) goal acc @ [ curr ]
     | SW ->
         make_path direction (file_of_int (xf - 1), xr - 1) goal acc @ [ curr ]
-    | W -> make_path direction (fst curr, xr - 1) goal acc @ [ curr ]
+    | W -> make_path direction (file_of_int (xf - 1), xr) goal acc @ [ curr ]
     | NW ->
-        make_path direction (file_of_int (xf + 1), xr - 1) goal acc @ [ curr ]
+        make_path direction (file_of_int (xf - 1), xr + 1) goal acc @ [ curr ]
 
 (** [move_path start finish] is a list of all coordinates between [start] and
     [finish] in the order of traversal sequence. *)
@@ -127,7 +150,11 @@ let is_valid_move (phrase : Command.move_phrase) : bool =
 (** [specify_move phrase] determines whether the move specified by [phrase] is a
     standard move, a merge move, or a split move *)
 let specify_move (phrase : Command.move_phrase) : move_type =
-  raise (Failure "Unimplemented: Move. specify_move")
+  match (phrase.start_tiles, phrase.end_tiles) with
+  | (Some x, None), (Some s, None) -> Standard
+  | (Some x, Some y), (Some s, None) -> Merge
+  | (Some x, None), (Some s, Some t) -> Split
+  | _ -> raise (Illegal "Not a move option.")
 
 (** [probability piece_locale file rank] returns the probability of a piece at a
     certain position based on [file] and [rank] in the position list
@@ -145,7 +172,7 @@ let probability (piece_locale : position list) (file : char) (rank : int) :
 let coord_checker (board : Board.t) (square : coord) : occupancy =
   match square with
   | file, rank -> (
-      let pieces = Board.tile board (file, rank) in
+      let pieces = tile_of_coord board (file, rank) in
       let max_percentage_list =
         List.fold_left
           (fun acc qpiece -> probability qpiece.superpositions file rank)
@@ -177,7 +204,7 @@ let coord_checker (board : Board.t) (square : coord) : occupancy =
 let capture_attempt (phrase : Command.move_phrase) : bool = failwith "lol"
 
 (** [castle_attempt phrase] is whether the player's move phrase is an attempt to
-    castle their king *)
+    castle their king. *)
 let castle_attempt (phrase : Command.move_phrase) : bool = failwith "lol"
 
 (* ================================================================= *)
