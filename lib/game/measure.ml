@@ -43,6 +43,18 @@ let full_probability_piece board square =
   | [ h ] -> Some h.id
   | _ -> failwith "There's more than one piece with full probability"
 
+(** [sort_tile board tile] is [tile] sorted in which pieces with the least
+    amount of superpositions are first. *)
+let sort_tile board tile =
+  let compare_piece x y =
+    if x.superpositions |> List.length < (y.superpositions |> List.length) then
+      -1
+    else if x.superpositions |> List.length = (y.superpositions |> List.length)
+    then 0
+    else 1
+  in
+  List.sort compare_piece tile
+
 (** [measure_piece board square] is the piece measured to be on [square] *)
 let measure_piece board square =
   match full_probability_piece board square with
@@ -87,7 +99,7 @@ let rec measure_tile board square bank =
 (** [push_off_tile board square bank] is the board where every piece on [square]
     is pushed off and its probabilities reallocated to other tiles *)
 and push_off_tile board square bank =
-  Board.tile board square
+  Board.tile board square |> sort_tile board
   |> List.fold_left
        (fun board_acc piece ->
          try push_off_piece board_acc square bank piece.id with _ -> board_acc)
@@ -105,22 +117,35 @@ and push_off_piece board square bank id =
   bank := IntMap.add id (probability +. piece_credits bank id) !bank;
   board := Board.remove_piece_tile !board square id;
 
-  (* Pre-emptively measure all tiles that would become super-stable if
-     probability is added *)
-  board := board_without_superstables !board bank id;
-
-  (* Evenly spread out the probabilities in the bank account *)
   let pos_lst = (Board.piece !board id).superpositions in
   let num_positions = List.length pos_lst in
   let prob_to_add = piece_credits bank id /. float_of_int num_positions in
   let total_spent = prob_to_add *. float_of_int num_positions in
-  board := add_position_probability !board id prob_to_add;
-  bank := IntMap.add id (piece_credits bank id -. total_spent) !bank;
 
-  (* If piece [id] only has 1 superposition at 100%, measure it *)
-  board := measure_stable_pieces !board bank id;
+  let board' = add_position_probability !board id prob_to_add in
+  match exists_full_probability_piece board' pos_lst with
+  | true ->
+      board := add_position_probability !board id prob_to_add;
+      bank := IntMap.add id (piece_credits bank id -. total_spent) !bank;
+      board := measure_stable_pieces !board bank id;
+      !board
+  | false ->
+      (* Pre-emptively measure all tiles that would become super-stable if
+         probability is added *)
+      board := board_without_superstables !board bank id;
 
-  !board
+      (* Evenly spread out the probabilities in the bank account *)
+      let pos_lst = (Board.piece !board id).superpositions in
+      let num_positions = List.length pos_lst in
+      let prob_to_add = piece_credits bank id /. float_of_int num_positions in
+      let total_spent = prob_to_add *. float_of_int num_positions in
+      board := add_position_probability !board id prob_to_add;
+      bank := IntMap.add id (piece_credits bank id -. total_spent) !bank;
+
+      (* If piece [id] only has 1 superposition at 100%, measure it *)
+      board := measure_stable_pieces !board bank id;
+
+      !board
 
 (* while IntMap.find id !bank > 0.0 do let num_positions = List.length
    (Board.piece !board id).superpositions in let prob_to_add = piece_credits
@@ -169,10 +194,15 @@ and board_without_superstables board bank id =
       find_superstable_positions !board !pos_lst !to_add
       |> List.fold_left
            (fun board_acc pos ->
-             (* !pos_lst |> string_of_list string_of_position |> print_endline;
-                piece_credits bank id |> string_of_float |> print_endline;
-                print_endline ("board_without_superstables: measure_tile called
-                on " ^ Char.escaped pos.file ^ string_of_int pos.rank); *)
+             !pos_lst |> string_of_list string_of_position |> print_endline;
+             Board.piece !board id |> string_of_piece |> print_endline;
+             piece_credits bank id |> string_of_float |> print_endline;
+             Board.tile_probability !board (pos.file, pos.rank)
+             |> string_of_float |> print_endline;
+             print_endline
+               ("board_without_superstables: measure_tile called\n\
+                \                on " ^ Char.escaped pos.file
+              ^ string_of_int pos.rank);
              measure_tile board_acc (pos.file, pos.rank) bank)
            !board;
     pos_lst := (Board.piece !board id).superpositions;
@@ -203,6 +233,14 @@ and measure_stable_pieces board bank id =
       then measure_tile board square bank
       else board
   | _ -> board
+
+(** [exists_full_probability_piece board pos_list] is true if a full probability
+    piece exists in [pos_list] *)
+and exists_full_probability_piece board pos_list =
+  List.fold_left
+    (fun acc pos ->
+      acc || full_probability_piece board (pos.file, pos.rank) <> None)
+    false pos_list
 
 (* ==================================================================== *)
 (* ========== Public Functions that belong to module Measure ========== *)
