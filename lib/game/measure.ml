@@ -89,7 +89,8 @@ let rec measure_tile board square bank =
 and push_off_tile board square bank =
   Board.tile board square
   |> List.fold_left
-       (fun board_acc piece -> push_off_piece board_acc square bank piece.id)
+       (fun board_acc piece ->
+         try push_off_piece board_acc square bank piece.id with _ -> board_acc)
        board
 
 (** [push_off_piece board square piece] pushes [piece] off of [square] and
