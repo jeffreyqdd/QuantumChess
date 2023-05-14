@@ -22,7 +22,7 @@ let _ =
   board := Board.add_piece_tile !board ('b', 7) black_rook_id 25.0;
   board := Board.add_piece_tile !board ('c', 7) black_rook_id 25.0;
 
-  board := Board.add_piece_tile !board ('a', 6) black_bishop_id 50.0;
+  board := Board.add_piece_tile !board ('a', 7) black_bishop_id 50.0;
   board := Board.add_piece_tile !board ('b', 6) black_bishop_id 25.0;
   board := Board.add_piece_tile !board ('c', 6) black_bishop_id 25.0;
 

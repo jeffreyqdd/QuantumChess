@@ -58,12 +58,16 @@ let measure_piece board square =
 
 (** [measure_tile board square bank] performs measurement on [square] *)
 let rec measure_tile board square bank =
+  (* match square with | file, rank -> ( print_endline ("measure_tile called on
+     " ^ Char.escaped file ^ string_of_int rank); *)
   let board = ref board in
   (* Find the piece that actually exists on [square] *)
   match measure_piece !board square with
   | Some id ->
-      (* Delete piece from board *)
+      (* Delete piece from board and delete all probability credits from
+         [bank] *)
       board := Board.delete_piece !board (Board.piece !board id);
+      bank := IntMap.add id 0.0 !bank;
 
       (* Push all other pieces off tile *)
       board := push_off_tile !board square bank;
@@ -164,6 +168,10 @@ and board_without_superstables board bank id =
       find_superstable_positions !board !pos_lst !to_add
       |> List.fold_left
            (fun board_acc pos ->
+             (* !pos_lst |> string_of_list string_of_position |> print_endline;
+                piece_credits bank id |> string_of_float |> print_endline;
+                print_endline ("board_without_superstables: measure_tile called
+                on " ^ Char.escaped pos.file ^ string_of_int pos.rank); *)
              measure_tile board_acc (pos.file, pos.rank) bank)
            !board;
     pos_lst := (Board.piece !board id).superpositions;
