@@ -199,6 +199,29 @@ let input4 =
   board := Board.add_piece_tile !board ('b', 7) black_king_id 50.0;
   !board
 
+let input5 =
+  let board = ref (Board.QFen.board_from_fen "r0/b1/k2/8/8/8/8/8 - b - -") in
+  let black_rook_id = (Board.top_piece !board ('a', 7)).id in
+  let black_bishop_id = (Board.top_piece !board ('a', 6)).id in
+  let black_king_id = (Board.top_piece !board ('a', 5)).id in
+  board := Board.remove_piece_tile !board ('a', 7) black_rook_id;
+  board := Board.remove_piece_tile !board ('a', 6) black_bishop_id;
+  board := Board.remove_piece_tile !board ('a', 5) black_king_id;
+
+  board := Board.add_piece_tile !board ('a', 7) black_rook_id 50.0;
+  board := Board.add_piece_tile !board ('b', 7) black_rook_id 25.0;
+  board := Board.add_piece_tile !board ('c', 7) black_rook_id 25.0;
+
+  board := Board.add_piece_tile !board ('a', 7) black_bishop_id 25.0;
+  board := Board.add_piece_tile !board ('b', 7) black_bishop_id 25.0;
+  board := Board.add_piece_tile !board ('c', 6) black_bishop_id 25.0;
+  board := Board.add_piece_tile !board ('d', 6) black_bishop_id 25.0;
+
+  board := Board.add_piece_tile !board ('a', 7) black_king_id 25.0;
+  board := Board.add_piece_tile !board ('a', 5) black_king_id 25.0;
+  board := Board.add_piece_tile !board ('b', 7) black_king_id 50.0;
+  !board
+
 let tests =
   [
     measure_test
@@ -214,4 +237,5 @@ let tests =
       [ expected2_1; expected2_2 ];
     measure_test_fail "More complex probabilities" input3 ('b', 7);
     measure_test_fail "Even more complex probabilities" input4 ('b', 7);
+    measure_test_fail "Even even more complex probabilities" input5 ('b', 7);
   ]
