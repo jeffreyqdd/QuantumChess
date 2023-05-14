@@ -104,8 +104,14 @@ let tests =
          });
     ( "parse exception empty" >:: fun _ ->
       assert_raises Empty (fun () -> parse "     ") );
-    ( "parse exception malformed quit" >:: fun _ ->
+    ( "parse exception malformed draw" >:: fun _ ->
       assert_raises Malformed (fun () -> parse " draw     funky") );
-    ( "parse exception malformed go" >:: fun _ ->
-      assert_raises Malformed (fun () -> parse "  move ") );
+    ( "parse exception malformed move1" >:: fun _ ->
+      assert_raises Malformed (fun () -> parse "  a1 a2 a4 ") );
+    ( "parse exception malformed move2" >:: fun _ ->
+      assert_raises Malformed (fun () -> parse "  32 a2 a4 ") );
+    ( "parse exception malformed move3" >:: fun _ ->
+      assert_raises Malformed (fun () -> parse "  a1 a2 32 ") );
+    ( "parse exception malformed move4" >:: fun _ ->
+      assert_raises Malformed (fun () -> parse "  a1 a2 33 a4 a5 ") );
   ]
