@@ -313,6 +313,7 @@ let tile board square =
         board.board.(rank).(int_of_file file)
 
 let piece board id = IntMap.find id board.pieces
+let pieces board = IntMap.fold (fun k v acc -> v :: acc) board.pieces []
 
 let set_piece board piece piece' =
   { board with pieces = IntMap.add piece.id piece' board.pieces }
