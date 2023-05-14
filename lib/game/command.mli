@@ -2,6 +2,9 @@ open State
 
 exception Malformed
 exception Empty
+exception Other1
+exception Other2 of int
+exception Other3
 
 type move_phrase = {
   id : int;

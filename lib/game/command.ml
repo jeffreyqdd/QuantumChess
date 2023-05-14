@@ -2,6 +2,9 @@ open State
 
 exception Malformed
 exception Empty
+exception Other1
+exception Other2 of int
+exception Other3
 
 type move_phrase = {
   id : int;
@@ -34,7 +37,19 @@ let coord_of_string s : coord =
   match explode s with
   | [] -> raise Empty
   | [ a ] -> raise Malformed
-  | [ a; b ] -> (a, int_of_char b)
+  | [ a; b ] ->
+      let c = int_of_char b - int_of_char '0' in
+      if a >= 'a' && a <= 'h' && c >= 1 && c <= 8 then (a, c)
+      else raise Malformed
+  | _ -> raise Malformed
+
+let is_coord_of_string s : bool =
+  match explode s with
+  | [] -> raise Empty
+  | [ a ] -> raise Malformed
+  | [ a; b ] ->
+      let c = int_of_char b - int_of_char '0' in
+      if a >= 'a' && a <= 'h' && c >= 1 && c <= 8 then true else false
   | _ -> raise Malformed
 
 let parse str =
@@ -47,43 +62,42 @@ let parse str =
     | [] -> raise Empty
     | a :: b when a = "draw" -> if b = [] then Draw else raise Malformed
     | a :: b when a = "resign" -> if b = [] then Resign else raise Malformed
-    | a :: b when a = "move" -> (
+    | a :: b when is_coord_of_string a -> (
         if b = [] then raise Malformed
         else
           match b with
           | [] -> raise Malformed
           | [ c ] -> raise Malformed
-          | [ c; d ] -> raise Malformed
-          | c :: d :: e when d = "to" -> (
-              match e with
+          | c :: d when int_of_string_opt c <> None -> (
+              match d with
               (* MOVE *)
+              | [ e ] ->
+                  Move
+                    {
+                      id = int_of_string c;
+                      start_tiles = (Some (coord_of_string a), None);
+                      end_tiles = (Some (coord_of_string e), None);
+                    }
+              (* MERGE *)
+              | [ e; f ] ->
+                  Move
+                    {
+                      id = int_of_string c;
+                      start_tiles = (Some (coord_of_string a), None);
+                      end_tiles =
+                        (Some (coord_of_string e), Some (coord_of_string f));
+                    }
+              | _ -> raise Malformed)
+          | c :: d :: e when int_of_string_opt d <> None -> (
+              match e with
+              (* SPLIT *)
               | [ f ] ->
                   Move
                     {
-                      id = next ();
-                      start_tiles = (Some (coord_of_string c), None);
-                      end_tiles = (Some (coord_of_string f), None);
-                    }
-              (* MERGE *)
-              | [ f; g ] ->
-                  Move
-                    {
-                      id = next ();
-                      start_tiles = (Some (coord_of_string c), None);
-                      end_tiles =
-                        (Some (coord_of_string f), Some (coord_of_string g));
-                    }
-              | _ -> raise Malformed)
-          | c :: d :: e :: f when e = "to" -> (
-              match f with
-              (* SPLIT *)
-              | [ g ] ->
-                  Move
-                    {
-                      id = 3;
+                      id = int_of_string d;
                       start_tiles =
-                        (Some (coord_of_string c), Some (coord_of_string d));
-                      end_tiles = (Some (coord_of_string g), None);
+                        (Some (coord_of_string a), Some (coord_of_string c));
+                      end_tiles = (Some (coord_of_string f), None);
                     }
               | _ -> raise Malformed)
           | c :: d -> raise Malformed)
