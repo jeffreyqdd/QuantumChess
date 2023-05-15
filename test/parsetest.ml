@@ -29,10 +29,12 @@ let pp_list pp_elt lst =
   in
   "[" ^ pp_elts lst ^ "]"
 
-let string_of_coord s =
-  match s with
+(** [string_of_coord c] pretty-prints coordinate object [c]. *)
+let string_of_coord c =
+  match c with
   | a, b -> String.make 1 a ^ string_of_int b
 
+(** [command_string c] pretty-prints command object [c]. *)
 let command_string c =
   match c with
   | Move s -> (
@@ -106,12 +108,20 @@ let tests =
       assert_raises Empty (fun () -> parse "     ") );
     ( "parse exception malformed draw" >:: fun _ ->
       assert_raises Malformed (fun () -> parse " draw     funky") );
-    ( "parse exception malformed move1" >:: fun _ ->
+    ( "parse exception malformed move without id" >:: fun _ ->
       assert_raises Malformed (fun () -> parse "  a1 a2 a4 ") );
-    ( "parse exception malformed move2" >:: fun _ ->
+    ( "parse exception malformed move incorrect order 1" >:: fun _ ->
       assert_raises Malformed (fun () -> parse "  32 a2 a4 ") );
-    ( "parse exception malformed move3" >:: fun _ ->
+    ( "parse exception malformed move incorrect order 2" >:: fun _ ->
       assert_raises Malformed (fun () -> parse "  a1 a2 32 ") );
-    ( "parse exception malformed move4" >:: fun _ ->
+    ( "parse exception malformed move too many inputs" >:: fun _ ->
       assert_raises Malformed (fun () -> parse "  a1 a2 33 a4 a5 ") );
+    ( "parse exception malformed move rank input 1 out of bounds" >:: fun _ ->
+      assert_raises Malformed (fun () -> parse "  a9 33 a5 ") );
+    ( "parse exception malformed move rank input 1 out of bounds" >:: fun _ ->
+      assert_raises Malformed (fun () -> parse "  i7 33 a5 ") );
+    ( "parse exception malformed move rank input 2 out of bounds" >:: fun _ ->
+      assert_raises Malformed (fun () -> parse "  a7 33 a9 ") );
+    ( "parse exception malformed move rank input 2 out of bounds" >:: fun _ ->
+      assert_raises Malformed (fun () -> parse "  a7 33 i5 ") );
   ]
