@@ -44,6 +44,7 @@ let string_of_position position =
   ^ " "
   ^ string_of_float position.probability
 
+(**[string_of_list] is the string representation of a list*)
 let string_of_list element lst =
   let f x = element x in
   "[" ^ (List.map f lst |> String.concat "; ") ^ "]"
@@ -54,6 +55,8 @@ let string_of_piece piece =
   ^ " "
   ^ string_of_list string_of_position piece.superpositions
 
+(**[cmp_set_like_lists] evaluates to true if every unique element in [lst1] is
+   in [lst2] and vice versa. Else, it evaluates to false.*)
 let cmp_set_like_lists lst1 lst2 =
   let uniq1 = List.sort_uniq compare lst1 in
   let uniq2 = List.sort_uniq compare lst2 in
