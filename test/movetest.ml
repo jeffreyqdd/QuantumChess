@@ -29,12 +29,16 @@ let test1 =
   let black_pawn_id2 = (Board.top_piece !board ('b', 1)).id in
   (* let b2_probability = Board.tile_probability !board ('b', 2) in *)
   let black_pawn_id3 = (Board.top_piece !board ('c', 1)).id in
+<<<<<<< HEAD
   (*print_endline (string_of_int black_pawn_id3); *)
   let black_pawn_id4 = (Board.top_piece !board ('d', 1)).id in
+=======
+  (* let black_pawn_id4 = (Board.top_piece !board ('d', 1)).id in *)
+>>>>>>> origin/move
   let black_pawn_id5 = (Board.top_piece !board ('e', 1)).id in
-  let black_pawn_id6 = (Board.top_piece !board ('f', 1)).id in
-  let black_pawn_id7 = (Board.top_piece !board ('g', 1)).id in
-  let black_pawn_id8 = (Board.top_piece !board ('h', 1)).id in
+  (* let black_pawn_id6 = (Board.top_piece !board ('f', 1)).id in *)
+  (* let black_pawn_id7 = (Board.top_piece !board ('g', 1)).id in *)
+  (* let black_pawn_id8 = (Board.top_piece !board ('h', 1)).id in *)
   let black_rook_id1 = (Board.top_piece !board ('a', 0)).id in
   let black_bishop_id1 = (Board.top_piece !board ('c', 0)).id in
   let black_knight_id1 = (Board.top_piece !board ('g', 0)).id in
@@ -42,9 +46,9 @@ let test1 =
   let white_pawn_id1 = (Board.top_piece !board ('a', 6)).id in
   let white_pawn_id2 = (Board.top_piece !board ('b', 6)).id in
   let white_knight_id2 = (Board.top_piece !board ('g', 7)).id in
-  let print_piece id =
-    id |> Board.piece !board |> string_of_piece |> print_endline
-  in
+
+  (* let print_piece id = id |> Board.piece !board |> string_of_piece |>
+     print_endline in *)
 
   (* let print_tile_probability tile = string_of_float tile |> print_endline
      in *)
@@ -132,6 +136,48 @@ let test1 =
       end_tiles = (Some ('h', 5), None);
     }
   in
+  let queen_b_take =
+    {
+      id = black_queen_id;
+      start_tiles = (Some ('h', 4), None);
+      end_tiles = (Some ('h', 5), None);
+    }
+  in
+  let queen_b_take_2 =
+    {
+      id = black_queen_id;
+      start_tiles = (Some ('h', 5), None);
+      end_tiles = (Some ('g', 6), None);
+    }
+  in
+  let queen_b_take_3 =
+    {
+      id = black_queen_id;
+      start_tiles = (Some ('g', 6), None);
+      end_tiles = (Some ('f', 7), None);
+    }
+  in
+  let queen_b_take_4 =
+    {
+      id = black_queen_id;
+      start_tiles = (Some ('f', 7), None);
+      end_tiles = (Some ('e', 7), None);
+    }
+  in
+  let split_knightb_1 =
+    {
+      id = black_knight_id1;
+      start_tiles = (Some ('h', 2), None);
+      end_tiles = (Some ('g', 0), Some ('g', 4));
+    }
+  in
+  let merge_knight_b1 =
+    {
+      id = black_knight_id1;
+      start_tiles = (Some ('g', 0), Some ('g', 4));
+      end_tiles = (Some ('h', 2), None);
+    }
+  in
   board := move !board move_pawnb_1;
   board := move !board move_pawnb_3;
   board := move !board move_pawnb_2;
@@ -148,6 +194,5 @@ let test1 =
      black_pawn_id3; print_piece black_rook_id1; print_piece white_pawn_id1;
      print_piece white_pawn_id2; print_piece black_knight_id1; *)
   draw !board 'a' 4
-(* print_tile_probability b2_probability *)
 
 let tests = [ move_test_suite "Movement sequence does not error" test1 ]
