@@ -6,10 +6,12 @@
                                                                             
                                                                             
 For optimal viewing pleasure, please resize window to fit this graphic      
-                                                                            
+
+Movement inspired by vim:
+   • hjkl 
+   • i to go into insertion mode
+   • esc to go into movement mode                                                                            
+   • \ to submit 
+   
 p - play local game                                                          
-c - create LAN game                                                         
-e - join LAN game                                                           
-                                                                            
 q - quit game                                                               
-a - help                                                                    
