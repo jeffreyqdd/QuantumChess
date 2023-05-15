@@ -29,12 +29,7 @@ let test1 =
   let black_pawn_id2 = (Board.top_piece !board ('b', 1)).id in
   (* let b2_probability = Board.tile_probability !board ('b', 2) in *)
   let black_pawn_id3 = (Board.top_piece !board ('c', 1)).id in
-<<<<<<< HEAD
-  (*print_endline (string_of_int black_pawn_id3); *)
-  let black_pawn_id4 = (Board.top_piece !board ('d', 1)).id in
-=======
   (* let black_pawn_id4 = (Board.top_piece !board ('d', 1)).id in *)
->>>>>>> origin/move
   let black_pawn_id5 = (Board.top_piece !board ('e', 1)).id in
   (* let black_pawn_id6 = (Board.top_piece !board ('f', 1)).id in *)
   (* let black_pawn_id7 = (Board.top_piece !board ('g', 1)).id in *)

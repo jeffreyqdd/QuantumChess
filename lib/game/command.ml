@@ -43,7 +43,7 @@ let coord_of_string s : coord =
   | [ a ] -> raise Malformed
   | [ a; b ] ->
       let c = int_of_char b - int_of_char '0' in
-      if a >= 'a' && a <= 'h' && c >= 1 && c <= 8 then (a, c)
+      if a >= 'a' && a <= 'h' && c >= 0 && c <= 7 then (a, c)
       else raise Malformed
   | _ -> raise Malformed
 

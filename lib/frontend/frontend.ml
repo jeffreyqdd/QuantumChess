@@ -8,18 +8,18 @@ let files = [ 'a'; 'b'; 'c'; 'd'; 'e'; 'f'; 'g'; 'h' ]
     color [c] *)
 let piece_to_string (p : State.piece_name) (c : State.color) : string =
   match (c, p) with
-  | White, King -> "\u{2654}"
-  | White, Queen -> "\u{2655}"
-  | White, Rook -> "\u{2656}"
-  | White, Bishop -> "\u{2657}"
-  | White, Knight -> "\u{2658}"
-  | White, Pawn -> "\u{2659}"
-  | Black, King -> "\u{265A}"
-  | Black, Queen -> "\u{265B}"
-  | Black, Rook -> "\u{265C}"
-  | Black, Bishop -> "\u{265D}"
-  | Black, Knight -> "\u{265E}"
-  | Black, Pawn -> "\u{265F}"
+  | Black, King -> "\u{2654}"
+  | Black, Queen -> "\u{2655}"
+  | Black, Rook -> "\u{2656}"
+  | Black, Bishop -> "\u{2657}"
+  | Black, Knight -> "\u{2658}"
+  | Black, Pawn -> "\u{2659}"
+  | White, King -> "\u{265A}"
+  | White, Queen -> "\u{265B}"
+  | White, Rook -> "\u{265C}"
+  | White, Bishop -> "\u{265D}"
+  | White, Knight -> "\u{265E}"
+  | White, Pawn -> "\u{265F}"
 
 (* NOT NEEDED IF SMALL BOARD, prints line separating files *)
 (* let print_hline () = print_char '+'; for i = 1 to 8 do print_string "---+"
@@ -35,7 +35,7 @@ let tile (board : Board.t) (file : char) (rank : int) : string =
 let string_of_board ?(render_highlight = false) board tfile trank =
   let board_str = ref [] in
   for rank = 7 downto 0 do
-    let str = ref (string_of_int (8 - rank) ^ " ") in
+    let str = ref (string_of_int rank ^ " ") in
     for i = Char.code 'a' to Char.code 'h' do
       let file = Char.chr i in
       let tile_str = tile board file rank in
