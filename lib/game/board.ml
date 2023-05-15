@@ -330,8 +330,11 @@ let top_piece board square =
   | _ -> failwith "error"
 
 let piece_probability board square piece =
-  (piece.superpositions |> List.find (fun pos -> (pos.file, pos.rank) = square))
-    .probability
+  try
+    (piece.superpositions
+    |> List.find (fun pos -> (pos.file, pos.rank) = square))
+      .probability
+  with _ -> 0.
 
 let tile_probability board square =
   tile board square
