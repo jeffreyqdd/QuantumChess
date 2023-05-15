@@ -12,7 +12,19 @@ let pp_string s = "\"" ^ s ^ "\""
 
 let board = ref (QFen.board_from_fen QFen.start)
 
-let _ =
+(** [move_test_suite name board square expected] tests [Move.move] and ensures
+    it doesn't error *)
+let move_test_suite (name : string) (test : unit) =
+  name >:: fun _ ->
+  let no_fail =
+    try
+      let _ = test in
+      true
+    with _ -> false
+  in
+  assert_equal no_fail true ~printer:string_of_bool
+
+let test1 =
   let black_pawn_id1 = (Board.top_piece !board ('a', 1)).id in
   let black_pawn_id2 = (Board.top_piece !board ('b', 1)).id in
   (* let b2_probability = Board.tile_probability !board ('b', 2) in *)
@@ -137,3 +149,5 @@ let _ =
      print_piece white_pawn_id2; print_piece black_knight_id1; *)
   draw !board 'a' 4
 (* print_tile_probability b2_probability *)
+
+let tests = [ move_test_suite "Movement sequence does not error" test1 ]
