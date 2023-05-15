@@ -129,48 +129,17 @@ let test1 =
       end_tiles = (Some ('h', 5), None);
     }
   in
-  let queen_b_take =
-    {
-      id = black_queen_id;
-      start_tiles = (Some ('h', 4), None);
-      end_tiles = (Some ('h', 5), None);
-    }
-  in
-  let queen_b_take_2 =
-    {
-      id = black_queen_id;
-      start_tiles = (Some ('h', 5), None);
-      end_tiles = (Some ('g', 6), None);
-    }
-  in
-  let queen_b_take_3 =
-    {
-      id = black_queen_id;
-      start_tiles = (Some ('g', 6), None);
-      end_tiles = (Some ('f', 7), None);
-    }
-  in
-  let queen_b_take_4 =
-    {
-      id = black_queen_id;
-      start_tiles = (Some ('f', 7), None);
-      end_tiles = (Some ('e', 7), None);
-    }
-  in
-  let split_knightb_1 =
-    {
-      id = black_knight_id1;
-      start_tiles = (Some ('h', 2), None);
-      end_tiles = (Some ('g', 0), Some ('g', 4));
-    }
-  in
-  let merge_knight_b1 =
-    {
-      id = black_knight_id1;
-      start_tiles = (Some ('g', 0), Some ('g', 4));
-      end_tiles = (Some ('h', 2), None);
-    }
-  in
+  (* let queen_b_take = { id = black_queen_id; start_tiles = (Some ('h', 4),
+     None); end_tiles = (Some ('h', 5), None); } in let queen_b_take_2 = { id =
+     black_queen_id; start_tiles = (Some ('h', 5), None); end_tiles = (Some
+     ('g', 6), None); } in let queen_b_take_3 = { id = black_queen_id;
+     start_tiles = (Some ('g', 6), None); end_tiles = (Some ('f', 7), None); }
+     in let queen_b_take_4 = { id = black_queen_id; start_tiles = (Some ('f',
+     7), None); end_tiles = (Some ('e', 7), None); } in let split_knightb_1 = {
+     id = black_knight_id1; start_tiles = (Some ('h', 2), None); end_tiles =
+     (Some ('g', 0), Some ('g', 4)); } in let merge_knight_b1 = { id =
+     black_knight_id1; start_tiles = (Some ('g', 0), Some ('g', 4)); end_tiles =
+     (Some ('h', 2), None); } in *)
   board := move !board move_pawnb_1;
   board := move !board move_pawnb_3;
   board := move !board move_pawnb_2;
@@ -182,10 +151,10 @@ let test1 =
   board := move !board move_bishopb_1;
   board := move !board move_pawnb_5;
   board := move !board move_queen_b;
-  board := move !board move_knightw_1;
-  (* print_piece black_pawn_id1; print_piece black_pawn_id2; print_piece
-     black_pawn_id3; print_piece black_rook_id1; print_piece white_pawn_id1;
-     print_piece white_pawn_id2; print_piece black_knight_id1; *)
-  draw !board 'a' 4
+  board := move !board move_knightw_1
+(* print_piece black_pawn_id1; print_piece black_pawn_id2; print_piece
+   black_pawn_id3; print_piece black_rook_id1; print_piece white_pawn_id1;
+   print_piece white_pawn_id2; print_piece black_knight_id1; *)
+(* draw !board 'a' 4 *)
 
 let tests = [ move_test_suite "Movement sequence does not error" test1 ]
