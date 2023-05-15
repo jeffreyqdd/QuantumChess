@@ -438,6 +438,7 @@ let move (board : Board.t) (phrase : Command.move_phrase) : Board.t =
   let piece = Board.piece board phrase.id in
   match (phrase.start_tiles, phrase.end_tiles) with
   | (Some x, None), (Some s, None) ->
+      let old_piece_probability = Board.piece_probability board x piece in
       if is_legal_move board piece x s then
         if is_valid_move board phrase then
           let move_sequence = move_path piece.piece_type.name x s in
@@ -445,13 +446,26 @@ let move (board : Board.t) (phrase : Command.move_phrase) : Board.t =
           | new_board, has_collided, last_coord ->
               if has_collided then new_board
               else if Board.tile_probability new_board s > 0.0 then
-                let take_attempt = Measure.measurement new_board s in
-                take_attempt
+                let take_attempt_board = Measure.measurement new_board s in
+                if Board.tile_probability take_attempt_board s = 100.0 then
+                  let victim_piece = Board.top_piece take_attempt_board s in
+                  let victim_yeeted_board =
+                    Board.delete_piece new_board victim_piece
+                  in
+                  let piece_taken_board =
+                    Board.remove_piece_tile victim_yeeted_board x piece.id
+                  in
+                  Board.add_piece_tile piece_taken_board s piece.id
+                    old_piece_probability
+                else
+                  Board.add_piece_tile take_attempt_board s piece.id
+                    old_piece_probability
               else
                 let piece_yeeted_board =
                   Board.remove_piece_tile new_board x piece.id
                 in
-                Board.add_piece_tile piece_yeeted_board s piece.id 100.0
+                Board.add_piece_tile piece_yeeted_board s piece.id
+                  old_piece_probability
         else board
       else board
   | (Some x, Some y), (Some s, None) -> board
