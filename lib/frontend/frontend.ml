@@ -88,3 +88,12 @@ let tile_info board file rank =
     ret := "                " :: !ret
   done;
   List.rev !ret
+
+(** [print_line board rank] prints the line in [board] represented by [rank] *)
+let print_line (board : Board.t) (rank : int) : unit =
+  files |> List.iter (fun file -> print_string (tile board file rank));
+  print_string "\n"
+
+let draw board file rank =
+  let _ = Sys.command "clear" in
+  ranks |> List.iter (fun rank -> print_line board rank)

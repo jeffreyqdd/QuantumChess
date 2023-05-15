@@ -29,6 +29,7 @@ let test1 =
   let black_pawn_id2 = (Board.top_piece !board ('b', 1)).id in
   (* let b2_probability = Board.tile_probability !board ('b', 2) in *)
   let black_pawn_id3 = (Board.top_piece !board ('c', 1)).id in
+  (*print_endline (string_of_int black_pawn_id3); *)
   let black_pawn_id4 = (Board.top_piece !board ('d', 1)).id in
   let black_pawn_id5 = (Board.top_piece !board ('e', 1)).id in
   let black_pawn_id6 = (Board.top_piece !board ('f', 1)).id in
@@ -143,7 +144,6 @@ let test1 =
   board := move !board move_pawnb_5;
   board := move !board move_queen_b;
   board := move !board move_knightw_1;
-  print_endline "new";
   (* print_piece black_pawn_id1; print_piece black_pawn_id2; print_piece
      black_pawn_id3; print_piece black_rook_id1; print_piece white_pawn_id1;
      print_piece white_pawn_id2; print_piece black_knight_id1; *)

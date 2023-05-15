@@ -7,3 +7,7 @@ val string_of_board :
 
 val tile_info : Board.t -> char -> int -> string list
 (** [tile_info tile] is the string representation information for [tile] *)
+
+val draw : Board.t -> char -> int -> unit
+(** [draw board file rank] draws the current board state and highlights the
+    cursor at the tile represented by [file] and [rank] *)
