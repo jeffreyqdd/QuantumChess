@@ -41,7 +41,7 @@ let qfen_init_pieces_test (name : string) (qfen : string)
     let test_name = String.make 1 file ^ string_of_int rank ^ " on " ^ name in
     test_name >:: fun _ ->
     assert_equal p
-      (Board.tile b (file, rank) |> List.map (fun piece -> piece.piece_type))
+      (Board.tile b file rank |> List.map (fun piece -> piece.piece_type))
       ~printer:(pp_list pp_piece)
   in
 
