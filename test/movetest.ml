@@ -166,6 +166,13 @@ let test1 =
       end_tiles = (Some ('g', 0), Some ('g', 4));
     }
   in
+  let merge_knight_b1 =
+    {
+      id = black_knight_id1;
+      start_tiles = (Some ('g', 0), Some ('g', 4));
+      end_tiles = (Some ('h', 2), None);
+    }
+  in
   board := move !board move_pawnb_1;
   board := move !board move_pawnb_3;
   board := move !board move_pawnb_2;
@@ -182,12 +189,14 @@ let test1 =
   board := move !board queen_b_take_2;
   board := move !board queen_b_take_3;
   board := move !board queen_b_take_4;
-  board := move !board split_knightb_1
+  board := move !board split_knightb_1;
+  board := move !board merge_knight_b1
 (* print_endline "new"; *)
 (* print_piece black_pawn_id1; print_piece black_pawn_id2; print_piece
    black_pawn_id3; print_piece black_rook_id1; print_piece white_pawn_id1;
    print_piece white_pawn_id2; print_piece black_knight_id1; *)
 (* print_piece black_knight_id1; draw !board 'a' 4 *)
 (* print_tile_probability b2_probability *)
+(* draw !board 'a' 4 *)
 
 let tests = [ move_test_suite "Movement sequence does not error" test1 ]
