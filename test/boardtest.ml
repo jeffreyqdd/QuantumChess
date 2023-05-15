@@ -33,6 +33,11 @@ let pp_string s = "\"" ^ s ^ "\""
 let pp_list pp_fun lst =
   "[" ^ List.fold_left (fun acc x -> acc ^ " " ^ pp_piece x) "" lst ^ " ]"
 
+let string_of_piece piece =
+  string_of_piece_name piece.piece_type.name
+  ^ " "
+  ^ string_of_list string_of_position piece.superpositions
+
 let qfen_init_pieces_test (name : string) (qfen : string)
     (test_positions : (char * int * piece_type list) list) : test list =
   let board = QFen.board_from_fen qfen in
@@ -65,6 +70,49 @@ let board_to_qfen_test (name : string) (qfen : string) =
 
 let ensure_exn_from_qfen (name : string) (qfen : string) (e : exn) =
   name >:: fun _ -> assert_raises e (fun _ -> QFen.board_from_fen qfen)
+
+let is_equal_test (name : string) (board1 : Board.t) (board2 : Board.t)
+    (expected : bool) =
+  name >:: fun _ ->
+  assert_equal (Board.is_equal board1 board2) expected ~printer:string_of_bool
+
+let player_turn_test (name : string) (board : Board.t) (expected : color) =
+  name >:: fun _ ->
+  assert_equal (Board.player_turn board) expected ~printer:pp_color
+
+let tile_test (name : string) (board : Board.t) (square : coord)
+    (expected : tile) =
+  name >:: fun _ -> assert_equal (Board.tile board square) expected
+
+let piece_test name board expected =
+  name >:: fun _ -> assert_equal (Board.pieces board) expected
+
+let pieces_test name board expected =
+  name >:: fun _ -> assert_equal (Board.pieces board) expected
+
+let top_piece_test name board square expected =
+  name >:: fun _ -> assert_equal (Board.top_piece board square) expected
+
+let piece_probability_test name board square piece expected =
+  name >:: fun _ ->
+  assert_equal (Board.piece_probability board square piece) expected
+
+let tile_probability_test name board square expected =
+  name >:: fun _ -> assert_equal (Board.tile_probability board square) expected
+
+let set_piece_test name board piece1 piece2 expected =
+  name >:: fun _ -> assert_equal (Board.set_piece board piece1 piece2) expected
+
+let add_piece_tile_test name board square id probability expected =
+  name >:: fun _ ->
+  assert_equal (Board.add_piece_tile board square id probability) expected
+
+let remove_piece_tile_test name board square id expected =
+  name >:: fun _ ->
+  assert_equal (Board.remove_piece_tile board square id) expected
+
+let delete_piece_test name board piece expected =
+  name >:: fun _ -> assert_equal (Board.delete_piece board piece) expected
 
 let tests =
   List.flatten
@@ -164,4 +212,15 @@ let tests =
         QFen.MalformedQFen;
       ensure_exn_from_qfen "Missing piece" "8/8/5:r0:r:1/8/8/8/8/8 - b - -"
         QFen.MalformedQFen;
+      is_equal_test "starting board is equal" Board.init Board.init true;
+      player_turn_test "starting board is white player turn" Board.init White;
+      tile_test "starting board is empty at b3" Board.init ('b', 3) [];
+      top_piece_test "find top piece at a7" Board.init ('a', 7)
+        (Board.tile Board.init ('a', 7) |> List.hd);
+      piece_probability_test "probability of piece on starting board is 100%"
+        Board.init ('a', 7)
+        (Board.top_piece Board.init ('a', 7))
+        100.;
+      tile_probability_test "probability of tile a7 on starting board is 100%"
+        Board.init ('a', 7) 100.;
     ]

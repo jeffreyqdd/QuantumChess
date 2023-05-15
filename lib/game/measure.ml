@@ -147,24 +147,6 @@ and push_off_piece board square bank id =
 
       !board
 
-(* while IntMap.find id !bank > 0.0 do let num_positions = List.length
-   (Board.piece !board id).superpositions in let prob_to_add = piece_credits
-   bank id /. float_of_int num_positions in
-
-   (Board.piece !board id).superpositions |> List.iter (fun pos -> let square' =
-   (pos.file, pos.rank) in let curr_probability = Board.piece_probability !board
-   square' (Board.piece !board id) in (* If tile stability doesn't exceed 100%
-   *) if Board.tile_probability !board square +. prob_to_add < 100.0 then (
-   board := Board.remove_piece_tile !board square' id; board :=
-   Board.add_piece_tile !board square' id (curr_probability +. prob_to_add);
-   bank := IntMap.add id (piece_credits bank id -. prob_to_add) !bank (* Else if
-   one piece has probability = 100% on tile *)) else if curr_probability +.
-   prob_to_add = 100.0 then ( board := Board.remove_piece_tile !board square'
-   id; board := Board.add_piece_tile !board square' id 100.0; board :=
-   measure_tile !board square' bank; bank := IntMap.add id 0.0 !bank (* Else if
-   tile becomes super-stable *)) else board := measure_tile !board square' bank)
-   done; !board *)
-
 (** [add_position_probability board id x] is the board where [x] probability is
     added to all superpositions of piece [id] *)
 and add_position_probability board id x =

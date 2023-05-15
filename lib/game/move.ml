@@ -81,7 +81,8 @@ let piece_direction (name : piece_name) (start : coord) (finish : coord) :
       let vertical_move = x = x' in
       match name with
       | Knight -> Jump
-      | Pawn -> if x = x' then N else if x' > x then NE else NW
+      | Pawn ->
+          if x = x' then if y < y' then N else S else if x' > x then NE else NW
       | Bishop -> diagonal_check x y x' y'
       | Rook -> (
           match (horizontal_move, vertical_move) with
@@ -141,6 +142,7 @@ let is_legal_move (board : Board.t) (piece : quantum_piece) (start : coord)
       | Pawn -> (
           match move_type with
           | N -> y + 1 = y' || ((not piece.has_moved) && y + 2 = y')
+          | S -> y - 1 = y' || ((not piece.has_moved) && y - 2 = y')
           | NW | NE ->
               if (f' = f + 1 && y' = y + 1) || (f' = f - 1 && y' = y + 1) then
                 check_occupancy_color board finish <> color
@@ -151,8 +153,8 @@ let is_legal_move (board : Board.t) (piece : quantum_piece) (start : coord)
           | N | S | W | E -> true
           | _ -> false)
       | Knight ->
-          (Int.abs f - f' = 1 && Int.abs y - y' = 2)
-          || (Int.abs f - f' = 2 && Int.abs y - y' = 1)
+          (Int.abs (f - f') = 1 && Int.abs (y - y') = 2)
+          || (Int.abs (f - f') = 2 && Int.abs (y - y') = 1)
       | Bishop -> (
           match move_type with
           | NE | NW | SE | SW -> true
@@ -207,19 +209,19 @@ let rec make_path (direction : direction) (curr : coord) (goal : coord)
     let xf = int_of_file (fst curr) in
     let xr = snd curr in
     match direction with
-    | Jump -> make_path direction goal goal acc
-    | N -> make_path direction (fst curr, xr + 1) goal acc @ [ curr ]
+    | N -> make_path direction (fst curr, xr + 1) goal (acc @ [ curr ])
     | NE ->
-        make_path direction (file_of_int (xf + 1), xr + 1) goal acc @ [ curr ]
-    | E -> make_path direction (file_of_int (xf + 1), xr) goal acc @ [ curr ]
+        make_path direction (file_of_int (xf + 1), xr + 1) goal (acc @ [ curr ])
+    | E -> make_path direction (file_of_int (xf + 1), xr) goal (acc @ [ curr ])
     | SE ->
-        make_path direction (file_of_int (xf + 1), xr - 1) goal acc @ [ curr ]
-    | S -> make_path direction (fst curr, xr - 1) goal acc @ [ curr ]
+        make_path direction (file_of_int (xf + 1), xr - 1) goal (acc @ [ curr ])
+    | S -> make_path direction (fst curr, xr - 1) goal (acc @ [ curr ])
     | SW ->
-        make_path direction (file_of_int (xf - 1), xr - 1) goal acc @ [ curr ]
-    | W -> make_path direction (file_of_int (xf - 1), xr) goal acc @ [ curr ]
+        make_path direction (file_of_int (xf - 1), xr - 1) goal (acc @ [ curr ])
+    | W -> make_path direction (file_of_int (xf - 1), xr) goal (acc @ [ curr ])
     | NW ->
-        make_path direction (file_of_int (xf - 1), xr + 1) goal acc @ [ curr ]
+        make_path direction (file_of_int (xf - 1), xr + 1) goal (acc @ [ curr ])
+    | Jump -> make_path direction goal goal (acc @ [ goal ])
 
 (** [move_path name start finish] is a list of all coordinates between [start]
     and [finish] in the order of traversal sequence of the piece variant [name]. *)
@@ -250,11 +252,14 @@ let coord_checker (board : Board.t) (square : coord) : occupancy =
 
 (** [is_valid_traversal board piece path] returns whether or not a piece [piece]
     can move along the path [path] without any collision in state [board]. *)
-let is_valid_traversal (board : Board.t) (piece : quantum_piece)
+let rec is_valid_traversal (board : Board.t) (piece : quantum_piece)
     (path : coord list) : bool =
+  (* match path with | h :: t -> let _ = if Board.tile_probability board h =
+     100.0 then piece.id |> Board.piece board |> string_of_piece |>
+     print_endline else "yo" |> print_endline in true && Board.tile_probability
+     board h < 100.0 && is_valid_traversal board piece t | [] -> true *)
   List.fold_left
-    (fun acc x ->
-      if Board.tile_probability board x < 100.0 then true else false)
+    (fun acc x -> acc && Board.tile_probability board x < 100.0)
     true path
 
 (** [is_valid_finish board square piece] is whether the final location [square]
@@ -452,10 +457,10 @@ let move (board : Board.t) (phrase : Command.move_phrase) : Board.t =
                   let victim_yeeted_board =
                     Board.delete_piece new_board victim_piece
                   in
-                  let piece_taken_board =
+                  let piece_taking_board =
                     Board.remove_piece_tile victim_yeeted_board x piece.id
                   in
-                  Board.add_piece_tile piece_taken_board s piece.id
+                  Board.add_piece_tile piece_taking_board s piece.id
                     old_piece_probability
                 else
                   Board.add_piece_tile take_attempt_board s piece.id
