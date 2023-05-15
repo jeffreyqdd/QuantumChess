@@ -185,9 +185,15 @@ let test1 =
   board := move !board move_pawnb_5;
   board := move !board move_queen_b;
   board := move !board move_knightw_1;
-  (* print_piece black_pawn_id1; print_piece black_pawn_id2; print_piece
-     black_pawn_id3; print_piece black_rook_id1; print_piece white_pawn_id1;
-     print_piece white_pawn_id2; print_piece black_knight_id1; *)
-  draw !board 'a' 4
+  board := move !board queen_b_take;
+  board := move !board queen_b_take_2;
+  board := move !board queen_b_take_3;
+  board := move !board queen_b_take_4;
+  board := move !board split_knightb_1;
+  board := move !board merge_knight_b1
+(* print_piece black_pawn_id1; print_piece black_pawn_id2; print_piece
+   black_pawn_id3; print_piece black_rook_id1; print_piece white_pawn_id1;
+   print_piece white_pawn_id2; print_piece black_knight_id1; *)
+(* draw !board 'a' 4 *)
 
 let tests = [ move_test_suite "Movement sequence does not error" test1 ]
