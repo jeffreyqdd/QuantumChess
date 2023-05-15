@@ -7,11 +7,11 @@
                                                                             
 For optimal viewing pleasure, please resize window to fit this graphic      
 
-Movement inspired by vim:
-   • hjkl 
-   • i to go into insertion mode
-   • esc to go into movement mode                                                                            
-   • \ to submit 
+Movement inspired by vim:              Possible commands:
+   • hjkl                                 • normal: <start> <id> <end> 
+   • i to go into insertion mode          • split: <start> <id> <end1> <end2>
+   • esc to go into movement mode         • merge: <start1> <start2> id <end>
+   • \ to submit                          • "resign" or "draw"
    
 p - play local game                                                          
 q - quit game                                                               
