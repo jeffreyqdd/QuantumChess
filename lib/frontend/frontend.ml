@@ -67,12 +67,8 @@ let probability_at_pos (piece : quantum_piece) (file : char) (rank : int) =
   in
   helper piece.superpositions
 
-let draw board file rank =
-  (* let _ = Sys.command "clear" in *)
-  ranks |> List.iter (fun rank -> print_line board rank)
-
 let tile_info board file rank =
-  let this_tile = Board.tile board file rank in
+  let this_tile = Board.tile board (file, rank) in
   let rec string_builder lst =
     match lst with
     | [] -> "\n"
@@ -81,7 +77,7 @@ let tile_info board file rank =
         let s =
           Printf.sprintf "(%2d)(%3s)(%5.2f)" h.id
             (piece_to_string h.piece_type.name h.piece_type.color)
-            (probability_at_pos h file rank *. 100.)
+            (probability_at_pos h file rank)
         in
         Printf.sprintf "%20s\n%s" s (string_builder t)
   in

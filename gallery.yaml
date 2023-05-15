@@ -31,6 +31,5 @@ desc: >
   not-existing and you don't know which is which until you measure and collapse 
   the state.
 
-  Our project supports playing a game of quantum chess against person player or
-  a computer. You can chose to play the game over a fun command-line application, 
-  or launch a webgui that can play quantum chess over LAN with other people. 
+  Our project supports playing a game of quantum chess against another person on 
+  a cool vim-inspired command line GUI. 
