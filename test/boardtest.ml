@@ -2,41 +2,7 @@ open OUnit2
 open Quantum
 open Board
 open State
-
-(** pretty printer functions*)
-let pp_piece p =
-  let piece_str =
-    match p.name with
-    | Pawn -> "Pawn"
-    | Rook -> "Rook"
-    | Knight -> "Knight"
-    | Bishop -> "Bishop"
-    | Queen -> "Queen"
-    | King -> "King"
-  in
-  let color_str =
-    match p.color with
-    | White -> "White"
-    | Black -> "Black"
-  in
-
-  "\"" ^ "(" ^ piece_str ^ ", " ^ color_str ^ ")\""
-
-let pp_color c =
-  match c with
-  | White -> "white"
-  | Black -> "black"
-
-(** [pp_string s] pretty-prints string [s]. *)
-let pp_string s = "\"" ^ s ^ "\""
-
-let pp_list pp_fun lst =
-  "[" ^ List.fold_left (fun acc x -> acc ^ " " ^ pp_piece x) "" lst ^ " ]"
-
-let string_of_piece piece =
-  string_of_piece_name piece.piece_type.name
-  ^ " "
-  ^ string_of_list string_of_position piece.superpositions
+open Util
 
 let qfen_init_pieces_test (name : string) (qfen : string)
     (test_positions : (char * int * piece_type list) list) : test list =
@@ -47,7 +13,7 @@ let qfen_init_pieces_test (name : string) (qfen : string)
     test_name >:: fun _ ->
     assert_equal p
       (Board.tile b (file, rank) |> List.map (fun piece -> piece.piece_type))
-      ~printer:(pp_list pp_piece)
+      ~printer:(string_of_list pp_piece)
   in
 
   List.fold_left

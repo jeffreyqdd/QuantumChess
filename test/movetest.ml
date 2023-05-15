@@ -5,10 +5,8 @@ open State
 open Frontend
 open Move
 open Command
+open Util
 module IntMap = Map.Make (Int)
-
-(** [pp_string s] pretty-prints string [s]. *)
-let pp_string s = "\"" ^ s ^ "\""
 
 let board = ref (QFen.board_from_fen QFen.start)
 
