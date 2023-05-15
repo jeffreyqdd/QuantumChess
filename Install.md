@@ -39,6 +39,8 @@ On linux systems with systemd, the most common fix is:
 ❯ systemctl enable docker --now
 ```
 
+On MacOs, make sure that the docker application is launched, and that the docker daemon is active.
+
 **Step 2: Build Docker Image**\
 Go into the **project root** and run `make docker`. 
 
@@ -48,6 +50,10 @@ computer resources).
 
 **Step 3: Play Project**\
 To execute this project run `make final-product`
+
+**Additional Commands:**
+1. `make doc` to create the docs
+2. `make test` to run the test cases
 
 ## Development:
 To develop using the docker container env, install the [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) 
