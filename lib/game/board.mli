@@ -99,7 +99,7 @@ val add_piece_tile : t -> coord -> int -> float -> t
     [piece.superpositions] with [probability]. *)
 
 val remove_piece_tile : t -> coord -> int -> t
-(** [remove_piece_tile board square int] is the board where [piece] is removed
+(** [remove_piece_tile board square id] is the board where [piece] is removed
     from the tile at [square], and [square] is removed from
     [piece.superpositions]. *)
 
