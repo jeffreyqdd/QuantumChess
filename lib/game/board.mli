@@ -62,9 +62,6 @@ end
 val is_equal : t -> t -> bool
 (** [is_equal board1 board2] is true if [board1 = board2] and false otherwise. *)
 
-val init : t
-(** [init] evaluates to the board state denoted in the fen [start] *)
-
 val player_turn : t -> color
 (** [player_turn board] is the player turn of the current board [t] *)
 
@@ -73,6 +70,9 @@ val tile : t -> coord -> tile
 
 val piece : t -> int -> quantum_piece
 (** [piece board id] is the piece of [id]. Fails if no piece is found. *)
+
+val pieces : t -> quantum_piece list
+(** [pieces board] is the list of all pieces in [board] *)
 
 val top_piece : t -> coord -> quantum_piece
 (** [top_piece board square] is the top-most piece at [square]. Fails if no
@@ -85,6 +85,13 @@ val piece_probability : t -> coord -> quantum_piece -> float
 val tile_probability : t -> coord -> float
 (** [tile_probability board square] is the total probability of all pieces at
     [square] *)
+
+val init : t
+(** [init] evaluates to the board state denoted in the fen [start] *)
+
+val set_piece : t -> quantum_piece -> quantum_piece -> t
+(** [set_piece board piece piece'] is the board where [piece] is replaced with
+    [piece']. *)
 
 val add_piece_tile : t -> coord -> int -> float -> t
 (** [add_piece_tile board square id probability] is the board where [piece] is
