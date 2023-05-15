@@ -38,6 +38,7 @@ type quantum_piece = {
 type tile = quantum_piece list
 (** The type representing the pieces on a tile *)
 
+(** The string representation of a piece_name*)
 let string_of_piece_name name =
   match name with
   | Pawn -> "Pawn"
@@ -47,16 +48,20 @@ let string_of_piece_name name =
   | Queen -> "Queen"
   | King -> "King"
 
+(** The string of a position. *)
 let string_of_position position =
   Char.escaped position.file
   ^ string_of_int position.rank
   ^ " "
   ^ string_of_float position.probability
 
+(** [string_of_list element lst] iterates through lst and calls the to_string of
+    each element. *)
 let string_of_list element lst =
   let f x = element x in
   "[" ^ (List.map f lst |> String.concat "; ") ^ "]"
 
+(** string_of_piece prints out a string representing a piece. *)
 let string_of_piece piece =
   string_of_piece_name piece.piece_type.name
   ^ " "
