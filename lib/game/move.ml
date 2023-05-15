@@ -409,6 +409,28 @@ let is_valid_castle (board : Board.t) (phrase : Command.move_phrase) : bool =
     | _ -> false
   else false
 
+(** [measure_move board move_path piece] measures a move such that changes to
+    board state are reflected by a move along path [move_path] with piece
+    [piece] in board state [board]. A triple tuple of the board state, whether
+    there has been a measured interference, and the coordinate of such
+    interference is returned. If no interference, then it returns the most
+    recent last coordinate. *)
+let measure_move (start : coord) (board : Board.t) (move_path : coord list)
+    (piece : quantum_piece) : Board.t * bool * coord =
+  List.fold_left
+    (fun (acc, tracker, last_coord) x ->
+      if tracker then (acc, tracker, last_coord)
+      else if Board.tile_probability acc x > 0.0 then
+        if (Board.top_piece acc x).piece_type.color <> piece.piece_type.color
+        then
+          let measured_board = Measure.measurement acc x in
+          if Board.tile_probability measured_board x = 100.0 then
+            (measured_board, true, x)
+          else (measured_board, false, x)
+        else (acc, false, x)
+      else (acc, false, x))
+    (board, false, start) move_path
+
 (* ================================================================= *)
 (* ========== Public Functions that belong to module Move ========== *)
 (* ================================================================= *)
@@ -416,7 +438,22 @@ let move (board : Board.t) (phrase : Command.move_phrase) : Board.t =
   let piece = Board.piece board phrase.id in
   match (phrase.start_tiles, phrase.end_tiles) with
   | (Some x, None), (Some s, None) ->
-      if is_legal_move board piece x s then board else board
+      if is_legal_move board piece x s then
+        if is_valid_move board phrase then
+          let move_sequence = move_path piece.piece_type.name x s in
+          match measure_move x board move_sequence piece with
+          | new_board, has_collided, last_coord ->
+              if has_collided then new_board
+              else if Board.tile_probability new_board s > 0.0 then
+                let take_attempt = Measure.measurement new_board s in
+                take_attempt
+              else
+                let piece_yeeted_board =
+                  Board.remove_piece_tile new_board x piece.id
+                in
+                Board.add_piece_tile piece_yeeted_board s piece.id 100.0
+        else board
+      else board
   | (Some x, Some y), (Some s, None) -> board
   | (Some x, None), (Some s, Some t) -> board
   | _ -> raise (Illegal "Not a move option.")
