@@ -75,4 +75,4 @@ let _ =
 (* board := Board.delete_piece !board black_rook; *)
 (* board := Board.remove_piece_tile !board ('a', 7) black_rook; board :=
    Board.remove_piece_tile !board ('b', 7) black_rook; *)
-(* draw !board 'a' 0; *)
+(* draw !board 'a' 0 *)

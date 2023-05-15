@@ -292,15 +292,15 @@ let input7 =
 let tests =
   [
     measure_test
-      "Black rook on a7/b7/c7/d7/e7 is measured to either be on a7 only with \
-       100% probability or b7/c7/d7/e7 with 25% probability each"
-      input1 ('a', 7)
+      "Black rook on a7/b7/c7/d7/e7 is measured to\n\
+      \   either be on a7 only with  100% probability or b7/c7/d7/e7 with 25%\n\
+      \   probability each" input1 ('a', 7)
       [ expected1_1; expected1_2 ];
     measure_test
-      "Black rook on a7/b7/c7, black bishop on a6/b6/c6, black king on \
-       a5/b5/c5 is measured to either be a rook on b7 only with 100% \
-       probability or a rook on a7:62.5 and b7:37.5 probability each"
-      input2 ('b', 7)
+      "Black rook on a7/b7/c7, black bishop on a6/b6/c6, black king on  a5/b5/c5\n\
+      \   is measured to either be a rook on b7 only with 100%  probability or \
+       a rook\n\
+      \   on a7:62.5 and b7:37.5 probability each" input2 ('b', 7)
       [ expected2_1; expected2_2 ];
     measure_test_fail "More complex probabilities" input3 ('b', 7);
     measure_test_fail "Even more complex probabilities" input4 ('b', 7);
