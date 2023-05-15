@@ -3,6 +3,7 @@ open Board
 open Frontend
 open Unix
 open TerminalUtil
+open Util
 
 (*refresh rate of underlying logic*)
 let fps = 60.
