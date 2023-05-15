@@ -473,7 +473,35 @@ let move (board : Board.t) (phrase : Command.move_phrase) : Board.t =
                   old_piece_probability
         else board
       else board
-  | (Some x, Some y), (Some s, None) -> board
+  | (Some x, Some y), (Some s, None) ->
+      let probability1 = Board.piece_probability board x piece in
+      let probability2 = Board.piece_probability board y piece in
+      if is_legal_move board piece x s && is_legal_move board piece y s then
+        if is_valid_move board phrase then
+          let move_seq1 = move_path piece.piece_type.name x s in
+          let move_seq2 = move_path piece.piece_type.name y s in
+          let first_branch = measure_move x board move_seq1 piece in
+          let board_with_first =
+            match first_branch with
+            | board, _, _ -> board
+          in
+          let second_branch = measure_move x board_with_first move_seq2 piece in
+          match (first_branch, second_branch) with
+          | ( (new_board1, has_collided1, last_coord1),
+              (new_board2, has_collided2, last_coord2) ) ->
+              if has_collided1 || has_collided2 then new_board2
+              else if Board.tile_probability new_board2 s > 0.0 then new_board2
+              else
+                let piece_yeeted_board =
+                  Board.remove_piece_tile new_board2 x piece.id
+                in
+                let piece_yeeted_board' =
+                  Board.remove_piece_tile piece_yeeted_board y piece.id
+                in
+                Board.add_piece_tile piece_yeeted_board' s piece.id
+                  (probability1 +. probability2)
+        else board
+      else board
   | (Some x, None), (Some s, Some t) ->
       let split_probability = Board.piece_probability board x piece /. 2.0 in
       if is_legal_move board piece x s && is_legal_move board piece x t then
