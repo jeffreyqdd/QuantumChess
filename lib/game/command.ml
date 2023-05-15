@@ -15,6 +15,8 @@ type command =
   | Draw
   | Resign  (** The type representing a command issued to the board *)
 
+(** [explode str] splits a string [str] into its respective characters,
+    returning a char list. *)
 let explode str =
   let rec explode_inner cur_index chars =
     if cur_index < String.length str then
@@ -24,12 +26,17 @@ let explode str =
   in
   explode_inner 0 []
 
+(** [next] increments a counter to keep track of the turn number. Each valid
+    move should increment the turn counter by 1. *)
 let next =
   let counter = ref 0 in
   fun () ->
     incr counter;
     !counter
 
+(** [coord_of_string s] turns a string [s] into a coordinate object. Raises
+    [Empty] if [s] is empty Raises [Malformed] if [s] is not of the form "a..h"
+    ^ "1..8" Returns coord, with char in 'a..h' and int in 1..8 *)
 let coord_of_string s : coord =
   match explode s with
   | [] -> raise Empty
@@ -40,6 +47,10 @@ let coord_of_string s : coord =
       else raise Malformed
   | _ -> raise Malformed
 
+(** [coord_of_string s] checks if a string [s] can be converted into a
+    coordinate object. Raises [Empty] if [s] is empty Raises [Malformed] if [s]
+    is not of the form "a..h" ^ "1..8" Returns true if with char in 'a..h' and
+    int in 1..8, false otherwise *)
 let is_coord_of_string s : bool =
   match explode s with
   | [] -> raise Empty
